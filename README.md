@@ -1,277 +1,214 @@
-# Calisthenics Tracker (Home Assistant custom integration)
+# Calisthenics Tracker for Home Assistant
 
-Lokale custom integration voor Home Assistant met domein `calisthenics_tracker`.
+Track your calisthenics workouts and body measurements from Home Assistant.
+Calisthenics Tracker stores your data locally in Home Assistant and makes it
+available as sensors for dashboards and automations.
 
-## Huidige scope: fase 1 t/m 5
+## What can you do with it?
 
-Deze fase levert:
+- Set up a personal profile with your start date, level, goal, and weekly
+  targets.
+- Start an A or B workout, record exercises and sets, and complete or cancel
+  the workout.
+- For each exercise, record the variation you performed, reps per set, RIR
+  (*repetitions in reserve*), pain score, and notes.
+- Track body weight, waist circumference, resting heart rate, steps, sleep,
+  calories, and protein.
+- View workout frequency, training time, measurements, and exercise progress
+  as Home Assistant sensors.
+- See the next scheduled workout and whether it is session A or B.
+- Follow progression or regression suggestions and beginner graduation
+  readiness.
 
-- config flow voor één persoonlijk profiel;
-- versioned opslag via `homeassistant.helpers.storage.Store`;
-- actions:
-  - `calisthenics_tracker.start_workout`
-  - `calisthenics_tracker.complete_workout`
-  - `calisthenics_tracker.cancel_workout`
-  - `calisthenics_tracker.log_exercise`
-  - `calisthenics_tracker.add_body_measurement`
-- alle 22 oefendefinities uit de workbook, met stabiele IDs, niveaus, voorschriften,
-  eenheden, tempo en beschikbare regressie-/progressievoorstellen;
-- afzonderlijke setwaarden, RIR, pijnscore en notities per oefening;
-- correctie van een oefening door een nieuwe log voor dezelfde `exercise_id`;
-- sensors:
-  - `sensor.calisthenics_active_workout`
-  - `sensor.calisthenics_current_level`
-  - `sensor.calisthenics_current_week`
-  - `sensor.calisthenics_next_workout`
-  - `sensor.calisthenics_sessions_this_week`
-  - `sensor.calisthenics_training_minutes_this_week`
-- buttons voor het afronden en annuleren van een actieve training;
-- Engelse en Nederlandse vertalingen.
-- lichaamsgewicht, middelomtrek, rusthartslag, stappen, slaap, calorie-inname,
-  eiwitinname en lokale notities per lichaamsmeting;
-- sensors voor laatste gewicht en middelomtrek, gewichtsverandering, het
-  7-daags gemiddelde gewicht, gemiddelde stappen en gemiddelde slaap;
-- voortgangssensor per catalogusoefening met maximaal drie recente sessies;
-- beginner-graduatiesensor gebaseerd op expliciet gelabelde strikte varianten;
-- volgende-training-sensor volgens het A/B weekschema;
-- voorbeeld-Lovelace-dashboard met standaardkaarten en parameterized scripts.
+The integration does not create a personalized training plan or automatically
+assign exercises to session A or B. Choose A or B when you start a workout and
+record the exercises you performed.
 
-## Installatie
+## Installation
 
-1. Plaats de map `custom_components/calisthenics_tracker/` in de Home Assistant-configuratiemap.
-2. Herstart Home Assistant.
-3. Ga naar **Settings → Devices & services → Add integration**.
-4. Zoek op **Calisthenics Tracker**.
+1. In your Home Assistant configuration directory, create the folder
+   `custom_components/calisthenics_tracker`.
+2. Copy the contents of this repository's
+   [`custom_components/calisthenics_tracker`](./custom_components/calisthenics_tracker)
+   folder into it. For example, `manifest.json` should be located at
+   `config/custom_components/calisthenics_tracker/manifest.json`.
+3. Restart Home Assistant.
+4. Go to **Settings → Devices & services → Add integration**.
+5. Search for **Calisthenics Tracker** and add it.
+6. Fill in your profile. The integration supports one tracker profile at a
+   time.
 
-## Configuratie
+The profile cannot currently be edited in place. Removing and adding the
+integration again also deletes your saved workouts and measurements, so only
+do this if you intend to start over.
 
-De config flow vraagt:
+## Your first workout
 
-- profielnaam;
-- startdatum;
-- huidig niveau;
-- doel;
-- trainingen per week;
-- dagelijks stappendoel.
+The integration adds actions to Home Assistant. Find them under
+**Developer tools → Actions** (called **Services** in some Home Assistant
+versions).
 
-## Actions
+### 1. Start a workout
 
-### `calisthenics_tracker.start_workout`
+Select `calisthenics_tracker.start_workout` and provide:
 
-Verplicht:
-- `session_type`: `A` of `B`.
+```yaml
+session_type: A
+```
 
-Optioneel:
-- `started_at`: timezone-aware ISO 8601.
+Use `B` for session B. Only one workout can be active at a time. You can
+optionally provide `started_at` as an ISO 8601 date and time with a timezone,
+for example `2026-11-08T10:00:00+01:00`.
 
-### `calisthenics_tracker.complete_workout`
+### 2. Log an exercise
 
-Optioneel:
-- `completed_at`: timezone-aware ISO 8601.
-- `notes`: tekst.
+While a workout is active, call `calisthenics_tracker.log_exercise`. For
+example:
 
-### `calisthenics_tracker.cancel_workout`
+```yaml
+exercise_id: beginner_push_up
+variant: Strict push-up
+sets:
+  - 10
+  - 9
+  - 8
+rir: 2
+pain_score: 0
+notes: Controlled tempo
+```
 
-Annuleert de actieve training en bewaart die met status `cancelled`; deze telt
-niet mee voor voltooide trainingen of progressieberekeningen. Er volgt een
-duidelijke foutmelding als er geen actieve training is.
+`exercise_id` is the stable ID of an exercise in the catalog. The catalog
+contains 22 exercises across beginner, intermediate, and advanced levels. You
+can find the exercise IDs in
+[`exercise_catalog.py`](./custom_components/calisthenics_tracker/exercise_catalog.py).
+Enter the reps for each set under `sets`; every value must be positive. `rir`
+is the number of additional reps you estimate you could have performed (0–5).
+`pain_score` ranges from 0 to 10.
 
-### `calisthenics_tracker.log_exercise`
+Logging the same exercise again during the same workout replaces its previous
+log, so you can correct an entry without creating a duplicate. A pain score
+of 4 or higher triggers a warning. This is not a medical assessment.
 
-Vereist een actieve training:
+### 3. Complete the workout
 
-- `exercise_id`: ID uit de catalogus hieronder;
-- `variant`: daadwerkelijk uitgevoerde variant;
-- `sets`: niet-lege lijst met één positief getal per set;
-- `rir`: geheel getal van 0 tot en met 5;
-- `pain_score`: geheel getal van 0 tot en met 10.
+Call `calisthenics_tracker.complete_workout`. The duration is calculated from
+the start and completion times. You can optionally provide `notes` and
+`completed_at`. Completed workouts count toward your weekly totals and
+progress calculations.
 
-Optioneel:
+If you do not want a workout to count, use
+`calisthenics_tracker.cancel_workout`. The workout is retained with a cancelled
+status but is not counted as completed. You can also use
+`button.calisthenics_complete_workout` and
+`button.calisthenics_cancel_workout`; these buttons perform the same actions
+without additional input.
 
-- `notes`: lokale notitie.
+## Add body measurements
 
-Een tweede action call voor dezelfde `exercise_id` **vervangt** de eerdere log in
-dezelfde actieve training; er ontstaat geen dubbele oefenregistratie. Bij een
-pijnscore van 4 of hoger geeft de action een waarschuwing (`pain_warning: true`)
-en wordt een algemene waarschuwing gelogd. De integration doet geen diagnose of
-automatische oefenvoorschriften.
+Use `calisthenics_tracker.add_body_measurement`. Provide one or more values; an
+empty measurement or a note by itself is not saved. For example:
 
-De workbook bevat geen A/B-oefenverdeling. Daarom zijn de definities niet aan A
-of B toegewezen en kan dezelfde oefening in beide sessies worden gelogd.
+```yaml
+weight_kg: 74.2
+waist_cm: 81
+steps: 9200
+sleep_hours: 7.5
+resting_heart_rate: 58
+```
 
-### Oefeningencatalogus
+All measurement fields are optional, so you can record just your weight if
+you prefer. Available fields:
 
-| Niveau | Exercise ID |
-|---|---|
-| Beginner | `beginner_push_up`, `beginner_inverted_row_band_pull_up`, `beginner_bodyweight_squat`, `beginner_walking_lunge`, `beginner_plank`, `beginner_glute_bridge` |
-| Intermediate | `intermediate_feet_elevated_push_up`, `intermediate_parallel_bar_dip`, `intermediate_pike_push_up`, `intermediate_pull_up`, `intermediate_chin_up`, `intermediate_feet_elevated_inverted_row`, `intermediate_bulgarian_split_squat`, `intermediate_pistol_squat_negative`, `intermediate_assisted_nordic_curl` |
-| Advanced | `advanced_muscle_up_progression`, `advanced_one_arm_pull_up_progression`, `advanced_front_lever_progression`, `advanced_pistol_squat_progression`, `advanced_weighted_dip`, `advanced_weighted_pull_up`, `advanced_weighted_pistol_squat` |
+| Field | Meaning |
+| --- | --- |
+| `weight_kg` | Body weight in kilograms |
+| `waist_cm` | Waist circumference in centimeters |
+| `resting_heart_rate` | Resting heart rate in beats per minute |
+| `steps` | Number of steps |
+| `sleep_hours` | Sleep duration in hours |
+| `calorie_intake` | Calorie intake |
+| `protein_grams` | Protein intake in grams |
+| `measured_at` | Optional measurement time as ISO 8601 with timezone |
+| `notes` | Optional note |
 
-De volledige namen en voorschriften staan in de lokaal opgeslagen `exercise_definitions`
-en de typed catalogus in `custom_components/calisthenics_tracker/exercise_catalog.py`.
+## View your data
 
-### `calisthenics_tracker.add_body_measurement`
+After setup, sensors named **Calisthenics ...** are available in Home
+Assistant. Find them under **Settings → Devices & services → Calisthenics
+Tracker → Entities**. Key sensors include:
 
-Voeg een meting toe met één of meer van deze optionele velden:
+| Sensor | What it shows |
+| --- | --- |
+| `sensor.calisthenics_active_workout` | Whether a workout is active |
+| `sensor.calisthenics_next_workout` | The next scheduled session, A or B |
+| `sensor.calisthenics_sessions_this_week` | Completed workouts since Monday |
+| `sensor.calisthenics_training_minutes_this_week` | Training minutes since Monday |
+| `sensor.calisthenics_current_level` | The level in your profile |
+| `sensor.calisthenics_current_week` | Training week based on your profile start date |
+| `sensor.calisthenics_latest_weight` | Most recently recorded weight |
+| `sensor.calisthenics_weight_7_day_average` | Average of measurements from today and the previous six calendar days |
+| `sensor.calisthenics_weight_change_since_start` | Latest weight minus first recorded weight |
+| `sensor.calisthenics_latest_waist` | Most recently recorded waist measurement |
+| `sensor.calisthenics_average_daily_steps_7_days` | Average steps per measured day over the last seven calendar days |
+| `sensor.calisthenics_average_sleep_7_days` | Average sleep per measured day over the last seven calendar days |
 
-- `measured_at`: optionele timezone-aware ISO 8601-tijd; standaard het huidige tijdstip;
-- `weight_kg`: lichaamsgewicht, groter dan 0 en maximaal 500 kg;
-- `waist_cm`: middelomtrek, groter dan 0 en maximaal 300 cm;
-- `resting_heart_rate`: geheel getal van 1 tot en met 300 bpm;
-- `steps`: niet-negatief geheel getal;
-- `sleep_hours`: getal van 0 tot en met 24 uur;
-- `calorie_intake` en `protein_grams`: eindige, niet-negatieve getallen;
-- `notes`: optionele lokale notitie.
+One measurement day is enough to calculate a seven-day average; days without
+measurements are ignored. If there are no usable measurements in the period,
+the sensor is unavailable. Weekly workout totals start on Monday and include
+completed workouts only.
 
-Minimaal één meetwaarde is vereist; een notitie alleen is niet voldoende. Elke
-meting krijgt een stabiele UUID en wordt met de overige gegevens lokaal in Home
-Assistant Storage bewaard. Er worden geen gezondheidsgegevens naar buiten
-verstuurd.
-
-De gewichts- en middelomtreksensoren tonen de meest recente meting van het
-betreffende veld. De gewichtsverandering is `laatste gewicht - eerste gewicht`;
-een negatieve waarde betekent gewichtsverlies. De sensoren voor het 7-daags
-gemiddelde gebruiken de lokale kalenderdagen van vandaag en de zes voorafgaande
-dagen. Per gemeten dag telt de laatste waarde mee; dagen zonder meting worden
-genegeerd. Eén meetdag is voldoende om een gemiddelde te tonen; zonder metingen
-in de periode is de sensor `unavailable`. Dit geldt ook voor gemiddelde stappen
-en slaap.
-
-## Progressie en beginner-graduatie
-
-Per oefening verschijnt een sensor zoals
-`sensor.calisthenics_progress_beginner_push_up`. De state is een van:
+Each catalog exercise has a progress sensor, for example
+`sensor.calisthenics_progress_beginner_push_up`. Its state can be
 `insufficient_data`, `progressing`, `maintaining`, `plateau`,
-`progression_ready` of `regression_recommended`. De attributen bevatten de
-variant, voorschriften, maximaal drie recente sessies en waar van toepassing de
-workbook-regressie of -progressie.
+`progression_ready`, or `regression_recommended`. The sensor compares similar
+completed workouts. Check its attributes for the variation and any related
+regression or progression suggestion.
 
-De engine vergelijkt maximaal de drie meest recente voltooide logs van dezelfde
-oefening en variant. Minder dan drie vergelijkbare logs geeft
-`insufficient_data`, behalve een recente pijnscore vanaf 4; die geeft direct
-`regression_recommended`. Ook twee of meer recente sessies waarbij minstens een
-voorgeschreven set onder het minimum blijft, adviseren regressie.
-`progression_ready` vereist dat alle voorgeschreven sets in twee opeenvolgende
-trainingen de maximumreps halen, RIR minimaal 1 is en de pijnscore lager dan 4
-blijft. `plateau` vereist drie opeenvolgende vergelijkbare sessies met exact
-gelijke totale herhalingen en RIR; een enkele slechte training is dus geen
-plateau. Een stijging in totale herhalingen of RIR ten opzichte van de vorige
-vergelijkbare training geldt als `progressing`; overige uitkomsten zijn
-`maintaining`.
+The `sensor.calisthenics_beginner_graduation_readiness` sensor reports
+`not_ready`, `nearly_ready`, or `graduation_ready`. Only explicitly logged
+strict variations are considered:
 
-De sensor `sensor.calisthenics_beginner_graduation_readiness` toont
-`not_ready`, `nearly_ready` of `graduation_ready`. Alleen sets uit voltooide
-workouts met expliciete variantlabels tellen mee: `strict push-up`,
-`dead-hang pull-up` en `strict full-depth squat` (ook spatie- en meervoudvormen
-worden herkend). Voor elke beweging telt de hoogste afzonderlijke set, nooit
-het opgetelde trainingsvolume. De doelen zijn respectievelijk 15, 5 en 20
-herhalingen. `nearly_ready` vereist dat alle drie geverifieerde scores ten
-minste 80% van hun doel halen; zonder gekwalificeerde score voor alle drie
-blijft de status `not_ready`. De sensorattributen tonen gevonden scores en
-doelen, niet de workoutgeschiedenis.
+- 15 strict push-ups;
+- 5 dead-hang pull-ups;
+- 20 strict full-depth squats.
 
-Progressie- en regressie-uitkomsten zijn trainingssuggesties, geen diagnoses.
-Bij een hoge pijnscore wordt geen zwaardere oefening voorgesteld.
+These are workout records and simple progress indicators, not medical advice
+or a diagnosis.
 
-## Volgende training
+## Dashboard and quick-entry scripts
 
-De sensor `sensor.calisthenics_next_workout` toont sessie A of B en geeft de
-geplande lokale datum als `scheduled_date`-attribuut. Het standaardschema is
-woensdag A, vrijdag B en zondag afwisselend op basis van de laatst voltooide
-zondagtraining (A als er nog geen zondagtraining is geregistreerd). Maandag,
-dinsdag, donderdag en zaterdag zijn rust- of wandeldagen. Een al voltooide
-training op de huidige geplande dag wordt overgeslagen.
+The [`examples`](./examples) folder contains examples using standard Home
+Assistant cards and scripts:
 
-`sensor.calisthenics_current_week` toont de trainingsweek sinds de ingestelde
-startdatum. De startdatum is week 1; elke daaropvolgende periode van zeven
-lokale kalenderdagen verhoogt het weeknummer. Voor een toekomstige startdatum
-is de sensor `unavailable`. `sensor.calisthenics_current_level` toont het
-niveau uit het profiel.
+- [`calisthenics_dashboard.yaml`](./examples/calisthenics_dashboard.yaml):
+  a dashboard with your active and next workouts, weekly totals, and progress.
+- [`calisthenics_tracker_scripts.yaml`](./examples/calisthenics_tracker_scripts.yaml):
+  reusable scripts to start or complete a workout, log an exercise, and add a
+  measurement.
 
-De buttons `button.calisthenics_complete_workout` en
-`button.calisthenics_cancel_workout` voeren dezelfde acties uit zonder
-parameters. De annuleerknop bewaart de registratie als `cancelled`.
+For example, you can include the scripts from your `configuration.yaml`:
 
-## Lovelace-dashboard en scripts
-
-De voorbeelden staan in `examples/`:
-
-- `calisthenics_dashboard.yaml`: dashboard met Tile-, Entities-,
-  Statistics Graph-, History Graph- en Markdown-kaarten;
-- `calisthenics_tracker_scripts.yaml`: scripts voor het starten en afronden
-  van trainingen, het loggen van een oefening en het toevoegen van
-  lichaamsmetingen.
-
-Voor de scripts:
-
-1. Kopieer `examples/calisthenics_tracker_scripts.yaml` naar de hoofdmap van
-   je Home Assistant-configuratie.
-2. Voeg `script: !include calisthenics_tracker_scripts.yaml` toe aan
-   `configuration.yaml`. Als daar al een `script:`-sectie staat, voeg de
-   scriptdefinities dan op de bestaande manier samen.
-3. Herlaad de scripts via **Developer tools → YAML → Reload scripts**, of
-   herstart Home Assistant.
-
-Daarna zijn onder andere `script.calisthenics_start_workout`,
-`script.calisthenics_complete_workout`, `script.calisthenics_log_exercise` en
-`script.calisthenics_add_body_measurement` beschikbaar. De oefenset-input is
-een lijst positieve getallen, bijvoorbeeld `[10, 9, 8]`. De meetwaarden-script
-accepteert een object met een of meer velden; minimaal één meetwaarde is
-vereist. Alle scripts roepen de lokale integration-actions aan.
-
-Voor het dashboard:
-
-1. Open `examples/calisthenics_dashboard.yaml` en kopieer de YAML-inhoud.
-2. Ga in Home Assistant naar **Settings → Dashboards → Add dashboard** en
-   maak een dashboard met YAML-configuratie.
-3. Plak de inhoud en sla het dashboard op.
-
-Het voorbeeld gebruikt uitsluitend standaard Home Assistant-kaarten. Pas de
-entiteiten aan als je de standaard entity IDs via de entiteitsinstellingen
-hebt gewijzigd.
-
-## Lokale opslag
-
-Gegevens worden lokaal opgeslagen in Home Assistant storage met schema:
-
-```json
-{
-  "schema_version": 3,
-  "profile": {},
-  "exercise_definitions": [],
-  "workouts": [],
-  "body_measurements": []
-}
+```yaml
+script: !include calisthenics_tracker_scripts.yaml
 ```
 
-De eerste initialisatie vult `exercise_definitions` met de 22 catalogusitems.
-Versies 1 en 2 worden automatisch naar versie 3 gemigreerd; bestaande workouts
-en profielgegevens blijven behouden.
+First copy the example file to your Home Assistant configuration directory,
+then reload your scripts. If you already have a `script:` section, merge the
+example scripts into your existing configuration. Exercise and measurement
+actions require input; use the scripts or call the actions directly from the
+Home Assistant interface.
 
-## Ontwikkelen en testen
+To use the dashboard, create a dashboard with YAML configuration in Home
+Assistant and copy in the contents of the dashboard example. Update entity IDs
+if you have changed them.
 
-Dit project gebruikt Python 3.14.2+ en Home Assistant 2026.11.0.
+## Privacy, backups, and removing the integration
 
-```powershell
-uv sync
-uv run ruff check .
-```
+Your profile, workouts, and measurements are stored locally by Home Assistant.
+The integration does not use cloud services or send data to external services.
+Include this data in your regular Home Assistant backups.
 
-On Windows PowerShell, run tests with:
-
-```powershell
-$env:PYTEST_DISABLE_PLUGIN_AUTOLOAD = "1"
-uv run python -m pytest -p pytest_asyncio.plugin
-```
-
-The plugin setting avoids conflicts when unrelated pytest plugins are
-installed in the Python environment.
-
-## Verwijderen
-
-Verwijder de integratie via **Settings → Devices & services → Calisthenics
-Tracker → Delete**. Bij het verwijderen van de config entry worden het lokale
-profiel, de trainingen, lichaamsmetingen en de oefeningencatalogus uit Home
-Assistant Storage verwijderd. Dit kan niet ongedaan worden gemaakt. Verwijder
-eventueel ook de gekopieerde dashboard- en scriptconfiguratie uit je Home
-Assistant-configuratie.
+Removing the integration from **Settings → Devices & services** also deletes
+the stored profile, workouts, and measurements. This cannot be undone. Remove
+any copied dashboard and script configuration separately if you no longer
+need it.
