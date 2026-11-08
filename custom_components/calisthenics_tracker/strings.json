@@ -1,0 +1,274 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Calisthenics tracker profile",
+        "description": "Set up your local profile and training targets.",
+        "data": {
+          "name": "Profile name",
+          "start_date": "Start date",
+          "current_level": "Current level",
+          "goal": "Goal",
+          "target_sessions_per_week": "Target sessions per week",
+          "daily_step_target": "Daily step target"
+        }
+      }
+    },
+    "error": {
+      "invalid_profile": "Please review the profile fields.",
+      "future_start_date": "Start date cannot be in the future."
+    },
+    "abort": {
+      "already_configured": "Only one tracker profile is supported."
+    }
+  },
+  "selector": {
+    "level": {
+      "options": {
+        "beginner": "Beginner",
+        "intermediate": "Intermediate",
+        "advanced": "Advanced"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "active_workout": {
+        "name": "Active workout"
+      },
+      "current_level": {
+        "name": "Current level"
+      },
+      "current_week": {
+        "name": "Current training week"
+      },
+      "next_workout": {
+        "name": "Next workout"
+      },
+      "sessions_this_week": {
+        "name": "Sessions this week"
+      },
+      "training_minutes_this_week": {
+        "name": "Training minutes this week"
+      },
+      "latest_weight": {
+        "name": "Latest weight"
+      },
+      "weight_7_day_average": {
+        "name": "7-day average weight"
+      },
+      "weight_change_since_start": {
+        "name": "Weight change since start"
+      },
+      "latest_waist": {
+        "name": "Latest waist circumference"
+      },
+      "average_daily_steps_7_days": {
+        "name": "Average daily steps (7 days)"
+      },
+      "average_sleep_7_days": {
+        "name": "Average sleep (7 days)"
+      },
+      "beginner_graduation_readiness": {
+        "name": "Beginner graduation readiness"
+      }
+    },
+    "button": {
+      "complete_workout": {
+        "name": "Complete workout"
+      },
+      "cancel_workout": {
+        "name": "Cancel workout"
+      }
+    }
+  },
+  "exceptions": {
+    "not_loaded": {
+      "message": "The tracker integration is not loaded."
+    },
+    "invalid_storage": {
+      "message": "Local tracker storage is invalid or inaccessible."
+    },
+    "invalid_timestamp": {
+      "message": "Timestamp must be timezone-aware ISO 8601."
+    },
+    "already_active": {
+      "message": "A workout is already active."
+    },
+    "invalid_session_type": {
+      "message": "Session type must be A or B."
+    },
+    "future_timestamp": {
+      "message": "Timestamp cannot be in the future."
+    },
+    "no_active": {
+      "message": "No active workout exists."
+    },
+    "end_before_start": {
+      "message": "Completion time must be after the start."
+    },
+    "invalid_notes": {
+      "message": "Notes must be a text value."
+    },
+    "storage_failed": {
+      "message": "Could not write local tracker data."
+    },
+    "unknown_exercise": {
+      "message": "The exercise ID is not in the local exercise catalog."
+    },
+    "invalid_exercise": {
+      "message": "Select an exercise from the catalog."
+    },
+    "invalid_variant": {
+      "message": "Enter a non-empty exercise variant."
+    },
+    "invalid_sets": {
+      "message": "Sets must be a non-empty list of positive numbers."
+    },
+    "invalid_rir": {
+      "message": "RIR must be an integer from 0 to 5."
+    },
+    "invalid_pain_score": {
+      "message": "Pain score must be an integer from 0 to 10."
+    },
+    "invalid_exercise_notes": {
+      "message": "Exercise notes must be text."
+    },
+    "invalid_measurement": {
+      "message": "The body measurement is invalid."
+    },
+    "empty_measurement": {
+      "message": "Enter at least one measurement value."
+    },
+    "invalid_weight": {
+      "message": "Weight must be greater than 0 and no more than 500 kg."
+    },
+    "invalid_waist": {
+      "message": "Waist circumference must be greater than 0 and no more than 300 cm."
+    },
+    "invalid_resting_heart_rate": {
+      "message": "Resting heart rate must be an integer from 1 to 300 bpm."
+    },
+    "invalid_steps": {
+      "message": "Steps must be a non-negative integer."
+    },
+    "invalid_sleep_hours": {
+      "message": "Sleep must be between 0 and 24 hours."
+    },
+    "invalid_calorie_intake": {
+      "message": "Calorie intake must be a finite non-negative number."
+    },
+    "invalid_protein_grams": {
+      "message": "Protein must be a finite non-negative number."
+    },
+    "invalid_measurement_notes": {
+      "message": "Measurement notes must be text."
+    }
+  },
+  "services": {
+    "start_workout": {
+      "name": "Start workout",
+      "description": "Start and persist an A or B workout.",
+      "fields": {
+        "session_type": {
+          "name": "Session type",
+          "description": "The session to start."
+        },
+        "started_at": {
+          "name": "Start time",
+          "description": "Optional timezone-aware ISO 8601 time."
+        }
+      }
+    },
+    "complete_workout": {
+      "name": "Complete workout",
+      "description": "Complete the active workout and persist duration.",
+      "fields": {
+        "completed_at": {
+          "name": "Completion time",
+          "description": "Optional timezone-aware ISO 8601 time."
+        },
+        "notes": {
+          "name": "Notes",
+          "description": "Optional local note."
+        }
+      }
+    },
+    "cancel_workout": {
+      "name": "Cancel workout",
+      "description": "Cancel and preserve the active workout. It is not counted as complete."
+    },
+    "log_exercise": {
+      "name": "Log exercise",
+      "description": "Log separate set values. A later log for the same exercise replaces its previous log in the active workout.",
+      "fields": {
+        "exercise_id": {
+          "name": "Exercise",
+          "description": "Stable ID from the local exercise catalog."
+        },
+        "variant": {
+          "name": "Variant",
+          "description": "The actual exercise variant performed."
+        },
+        "sets": {
+          "name": "Sets",
+          "description": "Non-empty list containing one positive number per set."
+        },
+        "rir": {
+          "name": "Reps in reserve",
+          "description": "Integer from 0 to 5."
+        },
+        "pain_score": {
+          "name": "Pain score",
+          "description": "Integer from 0 to 10. Scores of 4 or higher produce a caution."
+        },
+        "notes": {
+          "name": "Notes",
+          "description": "Optional private local note."
+        }
+      }
+    },
+    "add_body_measurement": {
+      "name": "Add body measurement",
+      "description": "Store body and wellbeing measurements locally.",
+      "fields": {
+        "measured_at": {
+          "name": "Measurement time",
+          "description": "Optional timezone-aware ISO 8601 timestamp."
+        },
+        "weight_kg": {
+          "name": "Weight",
+          "description": "Optional weight in kilograms."
+        },
+        "waist_cm": {
+          "name": "Waist circumference",
+          "description": "Optional waist measurement in centimeters."
+        },
+        "resting_heart_rate": {
+          "name": "Resting heart rate",
+          "description": "Optional resting heart rate in beats per minute."
+        },
+        "steps": {
+          "name": "Steps",
+          "description": "Optional daily step count."
+        },
+        "sleep_hours": {
+          "name": "Sleep",
+          "description": "Optional sleep duration in hours."
+        },
+        "calorie_intake": {
+          "name": "Calorie intake",
+          "description": "Optional calorie intake."
+        },
+        "protein_grams": {
+          "name": "Protein",
+          "description": "Optional protein amount in grams."
+        },
+        "notes": {
+          "name": "Notes",
+          "description": "Optional private local note."
+        }
+      }
+    }
+  }
+}

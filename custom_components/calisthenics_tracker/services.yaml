@@ -1,0 +1,170 @@
+start_workout:
+  name: Start workout
+  description: Start and persist an A or B workout. Only one workout can be active.
+  fields:
+    session_type:
+      name: Session type
+      description: The session to start.
+      required: true
+      selector:
+        select:
+          options:
+            - A
+            - B
+    started_at:
+      name: Start time
+      description: Optional ISO 8601 timestamp with timezone, not in the future.
+      example: "2026-11-08T10:00:00+01:00"
+      selector:
+        text:
+complete_workout:
+  name: Complete workout
+  description: Complete and persist the active workout and update weekly totals.
+  fields:
+    completed_at:
+      name: Completion time
+      description: Optional ISO 8601 timestamp with timezone, not in the future.
+      example: "2026-11-08T10:45:00+01:00"
+      selector:
+        text:
+    notes:
+      name: Notes
+      description: Optional workout notes, stored locally.
+      selector:
+        text:
+          multiline: true
+cancel_workout:
+  name: Cancel workout
+  description: Cancel and preserve the active workout without counting it as complete.
+log_exercise:
+  name: Log exercise
+  description: Log separate set values for a catalog exercise during the active workout.
+  fields:
+    exercise_id:
+      name: Exercise ID
+      description: Stable ID of an exercise in the local catalog.
+      required: true
+      example: beginner_push_up
+      selector:
+        text:
+    variant:
+      name: Variant
+      description: The variant actually performed.
+      required: true
+      example: Incline push-up
+      selector:
+        text:
+    sets:
+      name: Sets
+      description: Non-empty list with one positive numeric value per set.
+      required: true
+      example: [10, 9, 8]
+      selector:
+        object:
+    rir:
+      name: Reps in reserve
+      description: Integer from 0 to 5.
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 5
+          step: 1
+          mode: box
+    pain_score:
+      name: Pain score
+      description: Integer from 0 to 10; 4 or higher returns a caution.
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 10
+          step: 1
+          mode: box
+    notes:
+      name: Notes
+      description: Optional local note.
+      selector:
+        text:
+          multiline: true
+add_body_measurement:
+  name: Add body measurement
+  description: Store a body or wellbeing measurement locally.
+  fields:
+    measured_at:
+      name: Measurement time
+      description: Optional ISO 8601 timestamp with timezone, not in the future.
+      example: "2026-11-08T07:30:00+01:00"
+      selector:
+        text:
+    weight_kg:
+      name: Weight
+      description: Optional body weight in kilograms.
+      selector:
+        number:
+          min: 0.1
+          max: 500
+          step: 0.1
+          unit_of_measurement: kg
+          mode: box
+    waist_cm:
+      name: Waist
+      description: Optional waist circumference in centimeters.
+      selector:
+        number:
+          min: 0.1
+          max: 300
+          step: 0.1
+          unit_of_measurement: cm
+          mode: box
+    resting_heart_rate:
+      name: Resting heart rate
+      description: Optional resting heart rate in beats per minute.
+      selector:
+        number:
+          min: 1
+          max: 300
+          step: 1
+          unit_of_measurement: bpm
+          mode: box
+    steps:
+      name: Steps
+      description: Optional daily step count.
+      selector:
+        number:
+          min: 0
+          step: 1
+          mode: box
+    sleep_hours:
+      name: Sleep
+      description: Optional sleep duration from 0 to 24 hours.
+      selector:
+        number:
+          min: 0
+          max: 24
+          step: 0.1
+          unit_of_measurement: h
+          mode: box
+    calorie_intake:
+      name: Calorie intake
+      description: Optional calorie intake.
+      selector:
+        number:
+          min: 0
+          step: 1
+          mode: box
+    protein_grams:
+      name: Protein
+      description: Optional protein intake in grams.
+      selector:
+        number:
+          min: 0
+          step: 1
+          unit_of_measurement: g
+          mode: box
+    notes:
+      name: Notes
+      description: Optional private local note.
+      selector:
+        text:
+          multiline: true

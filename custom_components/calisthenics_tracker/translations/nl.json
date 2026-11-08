@@ -1,0 +1,274 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Calisthenics trackerprofiel",
+        "description": "Stel je lokale profiel en trainingsdoelen in.",
+        "data": {
+          "name": "Profielnaam",
+          "start_date": "Startdatum",
+          "current_level": "Huidig niveau",
+          "goal": "Doel",
+          "target_sessions_per_week": "Doel aantal trainingen per week",
+          "daily_step_target": "Dagelijks stappendoel"
+        }
+      }
+    },
+    "error": {
+      "invalid_profile": "Controleer de profielvelden.",
+      "future_start_date": "Startdatum mag niet in de toekomst liggen."
+    },
+    "abort": {
+      "already_configured": "Er wordt maar één trackerprofiel ondersteund."
+    }
+  },
+  "selector": {
+    "level": {
+      "options": {
+        "beginner": "Beginner",
+        "intermediate": "Gevorderd",
+        "advanced": "Expert"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "active_workout": {
+        "name": "Actieve training"
+      },
+      "current_level": {
+        "name": "Huidig niveau"
+      },
+      "current_week": {
+        "name": "Huidige trainingsweek"
+      },
+      "next_workout": {
+        "name": "Volgende training"
+      },
+      "sessions_this_week": {
+        "name": "Trainingen deze week"
+      },
+      "training_minutes_this_week": {
+        "name": "Trainingsminuten deze week"
+      },
+      "latest_weight": {
+        "name": "Laatste lichaamsgewicht"
+      },
+      "weight_7_day_average": {
+        "name": "Gemiddeld gewicht (7 dagen)"
+      },
+      "weight_change_since_start": {
+        "name": "Gewichtsverandering sinds start"
+      },
+      "latest_waist": {
+        "name": "Laatste middelomtrek"
+      },
+      "average_daily_steps_7_days": {
+        "name": "Gemiddeld aantal stappen per dag (7 dagen)"
+      },
+      "average_sleep_7_days": {
+        "name": "Gemiddelde slaap (7 dagen)"
+      },
+      "beginner_graduation_readiness": {
+        "name": "Gereedheid voor beginner-afronding"
+      }
+    },
+    "button": {
+      "complete_workout": {
+        "name": "Training afronden"
+      },
+      "cancel_workout": {
+        "name": "Training annuleren"
+      }
+    }
+  },
+  "exceptions": {
+    "not_loaded": {
+      "message": "De trackerintegratie is niet geladen."
+    },
+    "invalid_storage": {
+      "message": "Lokale trackeropslag is ongeldig of niet bereikbaar."
+    },
+    "invalid_timestamp": {
+      "message": "Tijdstip moet ISO 8601 met tijdzone zijn."
+    },
+    "already_active": {
+      "message": "Er is al een actieve training."
+    },
+    "invalid_session_type": {
+      "message": "Sessie moet A of B zijn."
+    },
+    "future_timestamp": {
+      "message": "Tijdstip mag niet in de toekomst liggen."
+    },
+    "no_active": {
+      "message": "Er is geen actieve training."
+    },
+    "end_before_start": {
+      "message": "Eindtijd moet na starttijd liggen."
+    },
+    "invalid_notes": {
+      "message": "Notities moeten tekst zijn."
+    },
+    "storage_failed": {
+      "message": "Lokale trackerdata kon niet worden opgeslagen."
+    },
+    "unknown_exercise": {
+      "message": "Deze oefening-ID staat niet in de lokale oefeningencatalogus."
+    },
+    "invalid_exercise": {
+      "message": "Kies een oefening uit de catalogus."
+    },
+    "invalid_variant": {
+      "message": "Vul een oefenvariant in."
+    },
+    "invalid_sets": {
+      "message": "Sets moeten een niet-lege lijst met positieve getallen zijn."
+    },
+    "invalid_rir": {
+      "message": "RIR moet een geheel getal van 0 tot en met 5 zijn."
+    },
+    "invalid_pain_score": {
+      "message": "Pijnscore moet een geheel getal van 0 tot en met 10 zijn."
+    },
+    "invalid_exercise_notes": {
+      "message": "Oefeningsnotities moeten tekst zijn."
+    },
+    "invalid_measurement": {
+      "message": "De lichaamsmeting is ongeldig."
+    },
+    "empty_measurement": {
+      "message": "Vul minimaal één meetwaarde in."
+    },
+    "invalid_weight": {
+      "message": "Gewicht moet hoger zijn dan 0 en maximaal 500 kg."
+    },
+    "invalid_waist": {
+      "message": "Middelomtrek moet hoger zijn dan 0 en maximaal 300 cm."
+    },
+    "invalid_resting_heart_rate": {
+      "message": "Rusthartslag moet een geheel getal van 1 tot en met 300 bpm zijn."
+    },
+    "invalid_steps": {
+      "message": "Stappen moeten een niet-negatief geheel getal zijn."
+    },
+    "invalid_sleep_hours": {
+      "message": "Slaap moet tussen 0 en 24 uur liggen."
+    },
+    "invalid_calorie_intake": {
+      "message": "Calorie-inname moet een eindig niet-negatief getal zijn."
+    },
+    "invalid_protein_grams": {
+      "message": "Eiwit moet een eindig niet-negatief getal zijn."
+    },
+    "invalid_measurement_notes": {
+      "message": "Meetnotities moeten tekst zijn."
+    }
+  },
+  "services": {
+    "start_workout": {
+      "name": "Training starten",
+      "description": "Start en bewaar een A- of B-training.",
+      "fields": {
+        "session_type": {
+          "name": "Sessietype",
+          "description": "De sessie die je wilt starten."
+        },
+        "started_at": {
+          "name": "Starttijd",
+          "description": "Optionele ISO 8601 tijd met tijdzone."
+        }
+      }
+    },
+    "complete_workout": {
+      "name": "Training afronden",
+      "description": "Rond de actieve training af en sla de duur op.",
+      "fields": {
+        "completed_at": {
+          "name": "Eindtijd",
+          "description": "Optionele ISO 8601 tijd met tijdzone."
+        },
+        "notes": {
+          "name": "Notities",
+          "description": "Optionele lokale notitie."
+        }
+      }
+    },
+    "cancel_workout": {
+      "name": "Training annuleren",
+      "description": "Annuleer en bewaar de actieve training. Deze telt niet als afgerond."
+    },
+    "log_exercise": {
+      "name": "Oefening loggen",
+      "description": "Registreer elke set afzonderlijk. Een nieuwe log voor dezelfde oefening vervangt de eerdere log in de actieve training.",
+      "fields": {
+        "exercise_id": {
+          "name": "Oefening",
+          "description": "Vaste ID uit de lokale oefeningencatalogus."
+        },
+        "variant": {
+          "name": "Variant",
+          "description": "De daadwerkelijk uitgevoerde oefenvariant."
+        },
+        "sets": {
+          "name": "Sets",
+          "description": "Niet-lege lijst met één positief getal per set."
+        },
+        "rir": {
+          "name": "Herhalingen over",
+          "description": "Geheel getal van 0 tot en met 5."
+        },
+        "pain_score": {
+          "name": "Pijnscore",
+          "description": "Geheel getal van 0 tot en met 10. Vanaf 4 volgt een waarschuwing."
+        },
+        "notes": {
+          "name": "Notities",
+          "description": "Optionele lokale notitie."
+        }
+      }
+    },
+    "add_body_measurement": {
+      "name": "Lichaamsmeting toevoegen",
+      "description": "Sla lichaams- en welzijnsmetingen lokaal op.",
+      "fields": {
+        "measured_at": {
+          "name": "Meetmoment",
+          "description": "Optionele ISO 8601-datum en -tijd met tijdzone."
+        },
+        "weight_kg": {
+          "name": "Gewicht",
+          "description": "Optioneel gewicht in kilogram."
+        },
+        "waist_cm": {
+          "name": "Middelomtrek",
+          "description": "Optionele middelomtrek in centimeters."
+        },
+        "resting_heart_rate": {
+          "name": "Rusthartslag",
+          "description": "Optionele rusthartslag in slagen per minuut."
+        },
+        "steps": {
+          "name": "Stappen",
+          "description": "Optioneel dagelijks aantal stappen."
+        },
+        "sleep_hours": {
+          "name": "Slaap",
+          "description": "Optionele slaapduur in uren."
+        },
+        "calorie_intake": {
+          "name": "Calorie-inname",
+          "description": "Optionele calorie-inname."
+        },
+        "protein_grams": {
+          "name": "Eiwit",
+          "description": "Optionele hoeveelheid eiwit in gram."
+        },
+        "notes": {
+          "name": "Notities",
+          "description": "Optionele privénotitie die lokaal wordt opgeslagen."
+        }
+      }
+    }
+  }
+}

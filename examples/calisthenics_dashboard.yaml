@@ -1,0 +1,87 @@
+title: Calisthenics
+views:
+  - title: Training
+    path: calisthenics
+    icon: mdi:dumbbell
+    cards:
+      - type: markdown
+        title: Volgende training
+        content: >-
+          {% set session = states('sensor.calisthenics_next_workout') %}
+          {% set date = state_attr('sensor.calisthenics_next_workout', 'scheduled_date') %}
+          {% if session in ['A', 'B'] and date %}
+          **Sessie {{ session }}** op **{{ date }}**.
+          {% else %}
+          Er is nog geen volgende training beschikbaar.
+          {% endif %}
+      - type: grid
+        columns: 2
+        square: false
+        cards:
+          - type: tile
+            entity: sensor.calisthenics_active_workout
+            name: Actieve training
+            icon: mdi:weight-lifter
+          - type: tile
+            entity: sensor.calisthenics_next_workout
+            name: Volgende training
+            icon: mdi:calendar-arrow-right
+          - type: button
+            entity: button.calisthenics_complete_workout
+            name: Training afronden
+            icon: mdi:check-circle-outline
+          - type: button
+            entity: button.calisthenics_cancel_workout
+            name: Training annuleren
+            icon: mdi:cancel
+          - type: tile
+            entity: sensor.calisthenics_current_level
+            name: Huidig niveau
+            icon: mdi:signal-cellular-3
+          - type: tile
+            entity: sensor.calisthenics_current_week
+            name: Trainingsweek
+            icon: mdi:calendar-week
+          - type: tile
+            entity: sensor.calisthenics_sessions_this_week
+            name: Trainingen deze week
+            icon: mdi:calendar-check
+          - type: tile
+            entity: sensor.calisthenics_training_minutes_this_week
+            name: Trainingsminuten deze week
+            icon: mdi:timer-outline
+          - type: tile
+            entity: sensor.calisthenics_beginner_graduation_readiness
+            name: Beginner-graduatie
+            icon: mdi:medal-outline
+      - type: entities
+        title: Voortgang
+        show_header_toggle: false
+        entities:
+          - entity: sensor.calisthenics_latest_weight
+          - entity: sensor.calisthenics_weight_7_day_average
+          - entity: sensor.calisthenics_weight_change_since_start
+          - entity: sensor.calisthenics_latest_waist
+          - entity: sensor.calisthenics_average_daily_steps_7_days
+          - entity: sensor.calisthenics_average_sleep_7_days
+          - entity: sensor.calisthenics_progress_beginner_push_up
+          - entity: sensor.calisthenics_progress_beginner_inverted_row_band_pull_up
+          - entity: sensor.calisthenics_progress_beginner_bodyweight_squat
+          - entity: sensor.calisthenics_beginner_graduation_readiness
+      - type: statistics-graph
+        title: Gewicht (30 dagen)
+        chart_type: line
+        period: day
+        days_to_show: 30
+        stat_types:
+          - mean
+        entities:
+          - sensor.calisthenics_latest_weight
+          - sensor.calisthenics_weight_7_day_average
+      - type: history-graph
+        title: Training en lichaamsmetingen (7 dagen)
+        hours_to_show: 168
+        entities:
+          - sensor.calisthenics_active_workout
+          - sensor.calisthenics_latest_weight
+          - sensor.calisthenics_latest_waist
