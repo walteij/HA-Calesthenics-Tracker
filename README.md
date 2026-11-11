@@ -191,9 +191,9 @@ the old helpers and automation.
 The catalog includes extra core and conditioning exercises for these
 suggestions. Conditioning can support energy expenditure, but does not
 guarantee fat loss; nutrition and longer-term energy balance also matter.
-Each suggested exercise includes a YouTube link. Selected exercises link to a
-specific tutorial; the remaining exercises open YouTube results for an
-exercise-specific form tutorial. Progress sensors also expose the link as the
+Each suggested exercise includes a link to a YouTube tutorial on proper form.
+Exercises outside the built-in catalog open YouTube search results for the
+exercise instead. Progress sensors also expose the link as the
 `tutorial_url` attribute.
 
 ### 3. Complete the workout

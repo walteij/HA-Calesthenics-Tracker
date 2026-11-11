@@ -6,15 +6,14 @@ from custom_components.calisthenics_tracker.exercise_catalog import WORKBOOK_EXE
 from custom_components.calisthenics_tracker.exercise_tutorials import youtube_tutorial
 
 
-def test_every_catalog_exercise_has_a_youtube_instruction_link() -> None:
+def test_every_catalog_exercise_links_directly_to_a_video() -> None:
     for exercise in WORKBOOK_EXERCISES:
         tutorial = youtube_tutorial(exercise.exercise_id, exercise.name)
 
-        assert tutorial["tutorial_url"].startswith("https://www.youtube.com/")
-        assert tutorial["tutorial_label"] in (
-            "Bekijk instructievideo",
-            "Zoek instructievideo's",
-        )
+        assert tutorial["tutorial_url"].startswith(
+            "https://www.youtube.com/watch?v="
+        ), exercise.exercise_id
+        assert tutorial["tutorial_label"] == "Bekijk instructievideo"
 
 
 def test_selected_exercises_link_directly_to_a_tutorial() -> None:
@@ -26,12 +25,13 @@ def test_selected_exercises_link_directly_to_a_tutorial() -> None:
     }
 
 
-def test_other_exercises_open_an_exact_name_tutorial_search() -> None:
-    tutorial = youtube_tutorial("intermediate_pike_push_up", "Pike push-up")
+def test_unknown_exercises_open_an_exact_name_tutorial_search() -> None:
+    tutorial = youtube_tutorial("custom_archer_push_up", "Archer push-up")
 
     assert tutorial["tutorial_url"].startswith(
         "https://www.youtube.com/results?search_query="
     )
-    assert "Pike push-up exercise tutorial proper form" in unquote_plus(
+    assert "Archer push-up exercise tutorial proper form" in unquote_plus(
         tutorial["tutorial_url"]
     )
+    assert tutorial["tutorial_label"] == "Zoek instructievideo's"
