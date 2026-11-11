@@ -24,6 +24,7 @@ from .models import (
     aware_datetime,
 )
 from .storage import TrackerStorage
+from .suggestion import WorkoutSuggestion
 
 LOGGER = logging.getLogger(__name__)
 
@@ -41,6 +42,7 @@ class TrackerCoordinator:
         self._listeners: set[Callable[[], None]] = set()
         self._closed = False
         self._remove_calendar_listener: Callable[[], None] | None = None
+        self.workout_suggestion = WorkoutSuggestion(self)
 
     @property
     def active_workout(self) -> Workout | None:

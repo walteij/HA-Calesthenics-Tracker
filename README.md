@@ -11,7 +11,8 @@ available as sensors for dashboards and automations.
 - Start an A or B workout, record exercises and sets, and complete or cancel
   the workout.
 - Get a suggested workout for core strength, conditioning, or supporting fat
-  loss, based on your profile level.
+  loss, based on your profile level. Choose the goal from a selector on your
+  dashboard; no helpers or automations needed.
 - For each exercise, record the variation you performed, reps per set, RIR
   (*repetitions in reserve*), pain score, and notes.
 - Track body weight, waist circumference, resting heart rate, steps, sleep,
@@ -115,18 +116,77 @@ of 4 or higher triggers a warning. This is not a medical assessment.
 
 ### Get a goal-focused workout suggestion
 
-Call `calisthenics_tracker.suggest_workout` with one of these focuses:
+The easiest way is the **Calisthenics Workout Suggestion** device. Choose a
+goal in `select.calisthenics_suggestion_focus`: core strength, conditioning,
+or fat-loss support. The suggestion sensors update immediately with a routine
+for the level in your profile. The integration remembers your choice after a
+restart and updates the suggestion when your level changes. You do not need
+helpers or automations.
+
+| Entity                                          | What it shows                                        |
+| ----------------------------------------------- | ---------------------------------------------------- |
+| `select.calisthenics_suggestion_focus`          | The selected goal                                    |
+| `sensor.calisthenics_suggestion_title`          | Name of the suggested workout                        |
+| `sensor.calisthenics_suggestion_level`          | Level used for the suggestion                        |
+| `sensor.calisthenics_suggestion_format`         | How to perform the circuit                           |
+| `sensor.calisthenics_suggestion_note`           | An additional note, or empty when there is none      |
+| `sensor.calisthenics_suggestion_exercise_count` | Number of suggested exercises                        |
+| `sensor.calisthenics_suggestion_exercises`      | Number of exercises, with the full list as attribute |
+
+The `exercises` attribute contains one entry per exercise with
+`exercise_id`, `name`, `prescription`, `target_sets`, `minimum_repetitions`,
+`maximum_repetitions`, `unit`, `tutorial_url`, and `tutorial_label`. For
+example, use this in a template:
+
+```jinja
+{{ state_attr('sensor.calisthenics_suggestion_exercises', 'exercises')[0].name }}
+```
+
+To change the goal from an automation or script, use the standard select
+action:
 
 ```yaml
-focus: core_strength
+action: select.select_option
+target:
+  entity_id: select.calisthenics_suggestion_focus
+data:
+  option: conditioning
+```
+
+You can also call `calisthenics_tracker.suggest_workout` directly and use the
+result in the same automation or script:
+
+```yaml
+- action: calisthenics_tracker.suggest_workout
+  data:
+    focus: core_strength
+  response_variable: suggestion
+- action: notify.notify
+  data:
+    message: "{{ suggestion.title }}: {{ suggestion.exercises | length }} exercises"
 ```
 
 The other options are `conditioning` and `fat_loss_support`. The action returns
-a routine selected for the level in your profile, with exercise IDs and
-prescriptions. It does not start a workout or log exercises; start an A or B
-workout separately, then log the exercises you performed. The dashboard and
-scripts in the [`examples`](./examples) folder include buttons that show the
-suggestion in a Home Assistant notification.
+the same routine, with exercise IDs and prescriptions, without changing the
+selected goal. A suggestion does not start a workout or log exercises; start
+an A or B workout separately, then log the exercises you performed. The
+dashboard in the [`examples`](./examples) folder shows the goal selector and
+the suggested workout.
+
+#### Moving from helpers and automations
+
+If you previously built suggestions with your own helpers, the integration
+entities now replace them:
+
+- Replace your `input_select` for the goal with
+  `select.calisthenics_suggestion_focus`.
+- Replace your `input_text` and `input_number` helpers with the
+  `sensor.calisthenics_suggestion_*` sensors.
+- Remove the automation that called `suggest_workout` when the goal changed;
+  the integration now updates the sensors itself.
+
+Update your dashboard cards and templates to the new entity IDs, then delete
+the old helpers and automation.
 
 The catalog includes extra core and conditioning exercises for these
 suggestions. Conditioning can support energy expenditure, but does not
@@ -182,7 +242,10 @@ you prefer. Available fields:
 
 After setup, sensors named **Calisthenics ...** are available in Home
 Assistant. Find them under **Settings → Devices & services → Calisthenics
-Tracker → Entities**. Key sensors include:
+Tracker → Entities**. The workout suggestion entities are grouped under the
+**Calisthenics Workout Suggestion** device; see
+[Get a goal-focused workout suggestion](#get-a-goal-focused-workout-suggestion).
+Key sensors include:
 
 | Sensor                                             | What it shows                                                         |
 | -------------------------------------------------- | --------------------------------------------------------------------- |
@@ -228,10 +291,12 @@ The [`examples`](./examples) folder contains examples using standard Home
 Assistant cards and scripts:
 
 - [`calisthenics_dashboard.yaml`](./examples/calisthenics_dashboard.yaml):
-  a dashboard with your active and next workouts, weekly totals, and progress.
+  a dashboard with your active and next workouts, a workout suggestion by
+  goal, weekly totals, and progress.
 - [`calisthenics_tracker_scripts.yaml`](./examples/calisthenics_tracker_scripts.yaml):
-  reusable scripts to suggest, start, or complete a workout, log an exercise,
-  and add a measurement.
+  reusable scripts to start or complete a workout, log an exercise, and add a
+  measurement. The `calisthenics_suggest_workout` script shows a suggestion
+  as a notification; on the dashboard, the goal selector replaces it.
 
 For example, you can include the scripts from your `configuration.yaml`:
 

@@ -71,6 +71,24 @@
       },
       "beginner_graduation_readiness": {
         "name": "Gereedheid voor beginner-afronding"
+      },
+      "suggestion_title": {
+        "name": "Titel"
+      },
+      "suggestion_level": {
+        "name": "Niveau"
+      },
+      "suggestion_format": {
+        "name": "Opzet"
+      },
+      "suggestion_note": {
+        "name": "Opmerking"
+      },
+      "suggestion_exercise_count": {
+        "name": "Aantal oefeningen"
+      },
+      "suggestion_exercises": {
+        "name": "Oefeningen"
       }
     },
     "button": {
@@ -79,6 +97,16 @@
       },
       "cancel_workout": {
         "name": "Training annuleren"
+      }
+    },
+    "select": {
+      "suggestion_focus": {
+        "name": "Trainingsdoel",
+        "state": {
+          "core_strength": "Corekracht",
+          "conditioning": "Conditie",
+          "fat_loss_support": "Vetverlies ondersteunen"
+        }
       }
     }
   },

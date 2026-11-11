@@ -9,6 +9,7 @@ from typing import Any
 
 import pytest
 from homeassistant.config_entries import ConfigEntryState
+from homeassistant.core import SupportsResponse
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.util import dt as dt_util
 from probatio import Invalid
@@ -64,6 +65,7 @@ class _FakeHass:
 class _FakeServices:
     def __init__(self) -> None:
         self.handlers: dict[str, Any] = {}
+        self.supports_response: dict[str, Any] = {}
         self.register_calls = 0
 
     def has_service(self, domain: str, name: str) -> bool:
@@ -77,6 +79,7 @@ class _FakeServices:
             raise AssertionError(f"Duplicate service registration: {key}")
         self.register_calls += 1
         self.handlers[key] = (handler, kwargs["schema"])
+        self.supports_response[key] = kwargs.get("supports_response")
 
     def async_remove(self, domain: str, name: str) -> None:
         self.handlers.pop(f"{domain}.{name}", None)
@@ -358,9 +361,7 @@ async def test_suggest_workout_action_uses_profile_level_and_catalog() -> None:
     register_services(hass)
     handler, schema = hass.services.handlers[f"{DOMAIN}.{SERVICE_SUGGEST_WORKOUT}"]
 
-    result = await handler(
-        SimpleNamespace(data=schema({"focus": "core_strength"}))
-    )
+    result = await handler(SimpleNamespace(data=schema({"focus": "core_strength"})))
 
     assert result["focus"] == "core_strength"
     assert result["level"] == "beginner"
@@ -398,6 +399,17 @@ def test_service_registration_is_idempotent() -> None:
     register_services(hass)
     assert hass.services.register_calls == 6
     assert len(hass.services.handlers) == 6
+
+
+def test_all_actions_support_optional_responses() -> None:
+    hass = _FakeHass()
+    register_services(hass)
+    assert len(hass.services.supports_response) == 6
+    assert set(hass.services.supports_response.values()) == {SupportsResponse.OPTIONAL}
+    assert (
+        hass.services.supports_response[f"{DOMAIN}.{SERVICE_SUGGEST_WORKOUT}"]
+        is SupportsResponse.OPTIONAL
+    )
 
 
 def test_services_are_removed_after_last_entry_unloads_and_can_reload() -> None:

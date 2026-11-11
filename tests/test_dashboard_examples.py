@@ -11,7 +11,8 @@ from homeassistant.core import HomeAssistant
 
 from custom_components.calisthenics_tracker.button import BUTTONS
 from custom_components.calisthenics_tracker.exercise_catalog import WORKBOOK_EXERCISES
-from custom_components.calisthenics_tracker.sensor import SENSORS
+from custom_components.calisthenics_tracker.select import SUGGESTION_FOCUS
+from custom_components.calisthenics_tracker.sensor import SENSORS, SUGGESTION_SENSORS
 
 EXAMPLES = Path(__file__).parents[1] / "examples"
 
@@ -65,8 +66,14 @@ def test_dashboard_uses_only_entities_provided_by_the_integration() -> None:
             for definition in WORKBOOK_EXERCISES
         }
         | {f"button.calisthenics_{description.key}" for description in BUTTONS}
+        | {
+            f"sensor.calisthenics_{description.key}"
+            for description in SUGGESTION_SENSORS
+        }
+        | {f"select.calisthenics_{SUGGESTION_FOCUS.key}"}
     )
     assert _dashboard_entities(dashboard) <= expected
+    assert "select.calisthenics_suggestion_focus" in _dashboard_entities(dashboard)
     card_types = _card_types(dashboard)
     assert {
         "tile",

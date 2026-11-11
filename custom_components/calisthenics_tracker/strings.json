@@ -71,6 +71,24 @@
       },
       "beginner_graduation_readiness": {
         "name": "Beginner graduation readiness"
+      },
+      "suggestion_title": {
+        "name": "Title"
+      },
+      "suggestion_level": {
+        "name": "Level"
+      },
+      "suggestion_format": {
+        "name": "Format"
+      },
+      "suggestion_note": {
+        "name": "Note"
+      },
+      "suggestion_exercise_count": {
+        "name": "Exercise count"
+      },
+      "suggestion_exercises": {
+        "name": "Exercises"
       }
     },
     "button": {
@@ -79,6 +97,16 @@
       },
       "cancel_workout": {
         "name": "Cancel workout"
+      }
+    },
+    "select": {
+      "suggestion_focus": {
+        "name": "Workout focus",
+        "state": {
+          "core_strength": "Core strength",
+          "conditioning": "Conditioning",
+          "fat_loss_support": "Fat-loss support"
+        }
       }
     }
   },

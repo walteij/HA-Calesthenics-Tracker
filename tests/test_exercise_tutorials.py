@@ -1,6 +1,6 @@
 """YouTube instruction links for catalog exercises."""
 
-from urllib.parse import unquote
+from urllib.parse import unquote_plus
 
 from custom_components.calisthenics_tracker.exercise_catalog import WORKBOOK_EXERCISES
 from custom_components.calisthenics_tracker.exercise_tutorials import youtube_tutorial
@@ -32,6 +32,6 @@ def test_other_exercises_open_an_exact_name_tutorial_search() -> None:
     assert tutorial["tutorial_url"].startswith(
         "https://www.youtube.com/results?search_query="
     )
-    assert "Pike push-up exercise tutorial proper form" in unquote(
+    assert "Pike push-up exercise tutorial proper form" in unquote_plus(
         tutorial["tutorial_url"]
     )

@@ -29,6 +29,7 @@ from .progression import (
     analyze_exercise_progress,
     beginner_graduation_readiness,
 )
+from .suggestion import WorkoutSuggestion, suggestion_device_info
 
 SENSORS = (
     SensorEntityDescription(
@@ -112,6 +113,45 @@ SENSORS = (
     ),
 )
 
+SUGGESTION_SENSORS = (
+    SensorEntityDescription(
+        key="suggestion_title",
+        translation_key="suggestion_title",
+        icon="mdi:clipboard-text-outline",
+    ),
+    SensorEntityDescription(
+        key="suggestion_level",
+        translation_key="suggestion_level",
+        icon="mdi:signal-cellular-3",
+    ),
+    SensorEntityDescription(
+        key="suggestion_format",
+        translation_key="suggestion_format",
+        icon="mdi:format-list-numbered",
+    ),
+    SensorEntityDescription(
+        key="suggestion_note",
+        translation_key="suggestion_note",
+        icon="mdi:information-outline",
+    ),
+    SensorEntityDescription(
+        key="suggestion_exercise_count",
+        translation_key="suggestion_exercise_count",
+        icon="mdi:counter",
+    ),
+    SensorEntityDescription(
+        key="suggestion_exercises",
+        translation_key="suggestion_exercises",
+        icon="mdi:format-list-checks",
+    ),
+)
+_SUGGESTION_FIELDS = {
+    "suggestion_title": "title",
+    "suggestion_level": "level",
+    "suggestion_format": "format",
+    "suggestion_note": "note",
+}
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -128,6 +168,14 @@ async def async_setup_entry(
             *(
                 ExerciseProgressSensor(entry.runtime_data, entry.entry_id, definition)
                 for definition in entry.runtime_data.data.exercise_definitions
+            ),
+            *(
+                WorkoutSuggestionSensor(
+                    entry.runtime_data.workout_suggestion,
+                    entry.entry_id,
+                    description,
+                )
+                for description in SUGGESTION_SENSORS
             ),
         ]
     )
@@ -302,3 +350,59 @@ class ExerciseProgressSensor(SensorEntity):
         if progress.status.value == "progression_ready":
             attributes["suggested_progression"] = self.definition.progression
         return attributes
+
+
+class WorkoutSuggestionSensor(SensorEntity):
+    """Expose one part of the suggestion for the selected workout focus."""
+
+    _attr_has_entity_name = True
+    _attr_should_poll = False
+    _unrecorded_attributes = frozenset({"exercises"})
+
+    def __init__(
+        self,
+        suggestion: WorkoutSuggestion,
+        entry_id: str,
+        description: SensorEntityDescription,
+    ) -> None:
+        self.suggestion = suggestion
+        self.entity_description = description
+        self._attr_unique_id = f"{entry_id}_{description.key}"
+        self._attr_device_info = suggestion_device_info(entry_id)
+        self.entity_id = f"sensor.calisthenics_{description.key}"
+
+    async def async_added_to_hass(self) -> None:
+        """Follow focus and tracker changes until the entity unloads."""
+        await super().async_added_to_hass()
+        self.async_on_remove(
+            self.suggestion.async_add_listener(self._suggestion_changed)
+        )
+
+    @callback
+    def _suggestion_changed(self) -> None:
+        self.async_write_ha_state()
+
+    @property
+    def available(self) -> bool:
+        return self.suggestion.result is not None
+
+    @property
+    def native_value(self) -> str | int | None:
+        result = self.suggestion.result
+        if result is None:
+            return None
+        key = self.entity_description.key
+        if key in _SUGGESTION_FIELDS:
+            return result[_SUGGESTION_FIELDS[key]]
+        count = len(result["exercises"])
+        return str(count) if key == "suggestion_exercises" else count
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any] | None:
+        result = self.suggestion.result
+        if result is None or self.entity_description.key != "suggestion_exercises":
+            return None
+        return {
+            "focus": result["focus"],
+            "exercises": [dict(exercise) for exercise in result["exercises"]],
+        }
