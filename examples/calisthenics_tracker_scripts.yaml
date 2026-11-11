@@ -1,203 +1,56 @@
-calisthenics_start_workout:
-  alias: Calisthenics - training starten
-  description: Start een A- of B-training in de lokale tracker.
+# ============================================================
+# Calisthenics Tracker – Example Scripts
+# ============================================================
+# These scripts bridge the dashboard buttons to the
+# calisthenics_tracker integration services.
+#
+# Prerequisites:
+#   - custom_components/calisthenics_tracker
+#   - Hevy integration (optional, for hevy.start_workout)
+#   - input_number.calisthenics_invoer_gewicht  (helper, 40–250 kg)
+#   - input_number.calisthenics_invoer_taille   (helper, 50–200 cm)
+# ============================================================
+
+# ── Training A starten ────────────────────────────────────────
+calisthenics_training_a_starten:
+  alias: Calisthenics training A starten
+  description: >-
+    Start sessie A (basissterkte) in zowel de Calisthenics Tracker
+    als Hevy.
+  icon: mdi:arm-flex
   mode: single
-  fields:
-    session_type:
-      name: Sessietype
-      required: true
-      selector:
-        select:
-          options:
-            - A
-            - B
   sequence:
     - action: calisthenics_tracker.start_workout
       data:
-        session_type: "{{ session_type }}"
+        session_type: A
+    - action: hevy.start_workout
+      data: {}
 
-calisthenics_suggest_workout:
-  alias: Calisthenics - training voorstellen
-  description: Toon een doelgerichte oefenselectie als Home Assistant-melding.
-  mode: single
-  fields:
-    focus:
-      name: Trainingsdoel
-      required: true
-      selector:
-        select:
-          options:
-            - label: Corekracht
-              value: core_strength
-            - label: Conditie
-              value: conditioning
-            - label: Vetverlies ondersteunen
-              value: fat_loss_support
-  sequence:
-    - action: calisthenics_tracker.suggest_workout
-      data:
-        focus: "{{ focus }}"
-      response_variable: suggestion
-    - action: persistent_notification.create
-      data:
-        notification_id: calisthenics_workout_suggestion
-        title: "{{ suggestion.title }} ({{ suggestion.level }})"
-        message: >-
-          {{ suggestion.format }}
-
-          {% for exercise in suggestion.exercises %}
-          - **{{ exercise.name }}**: {{ exercise.prescription }} — [{{ exercise.tutorial_label }}]({{ exercise.tutorial_url }})
-          {% endfor %}
-
-          {{ suggestion.note }}
-
-calisthenics_complete_workout:
-  alias: Calisthenics - training afronden
-  description: Rond de actieve training af en sla optionele notities op.
-  mode: single
-  fields:
-    notes:
-      name: Notities
-      selector:
-        text:
-          multiline: true
-  sequence:
-    - action: calisthenics_tracker.complete_workout
-      data:
-        notes: "{{ notes | default('') }}"
-
-calisthenics_log_exercise:
-  alias: Calisthenics - oefening loggen
+# ── Training B starten ────────────────────────────────────────
+calisthenics_training_b_starten:
+  alias: Calisthenics training B starten
   description: >-
-    Registreer sets als een niet-lege lijst positieve getallen, bijvoorbeeld
-    [10, 9, 8]. Een nieuwe log voor dezelfde oefening vervangt de eerdere log.
+    Start sessie B (conditie & core) in zowel de Calisthenics Tracker
+    als Hevy.
+  icon: mdi:run-fast
   mode: single
-  fields:
-    exercise_id:
-      name: Oefening-ID
-      required: true
-      selector:
-        text:
-    variant:
-      name: Uitgevoerde variant
-      required: true
-      selector:
-        text:
-    sets:
-      name: Herhalingen per set
-      description: Een lijst, bijvoorbeeld [10, 9, 8].
-      required: true
-      selector:
-        object:
-    rir:
-      name: Herhalingen over (RIR)
-      required: true
-      selector:
-        number:
-          min: 0
-          max: 5
-          step: 1
-          mode: box
-    pain_score:
-      name: Pijnscore
-      description: Vanaf 4 toont de tracker een waarschuwing.
-      required: true
-      selector:
-        number:
-          min: 0
-          max: 10
-          step: 1
-          mode: box
-    notes:
-      name: Notities
-      selector:
-        text:
-          multiline: true
   sequence:
-    - action: calisthenics_tracker.log_exercise
+    - action: calisthenics_tracker.start_workout
       data:
-        exercise_id: "{{ exercise_id }}"
-        variant: "{{ variant }}"
-        sets: "{{ sets }}"
-        rir: "{{ rir | int }}"
-        pain_score: "{{ pain_score | int }}"
-        notes: "{{ notes | default('') }}"
+        session_type: B
+    - action: hevy.start_workout
+      data: {}
 
-calisthenics_add_body_measurement:
-  alias: Calisthenics - lichaamsmeting toevoegen
+# ── Meting opslaan ────────────────────────────────────────────
+calisthenics_meting_opslaan:
+  alias: Calisthenics meting opslaan
   description: >-
-    Sla een of meer meetwaarden op in Home Assistant. Vul minimaal één waarde
-    in. De gegevens blijven lokaal.
+    Slaat gewicht en/of taille op via de Calisthenics Tracker.
+    Alleen gevulde waarden worden verstuurd.
+  icon: mdi:content-save
   mode: single
-  fields:
-    measurement:
-      name: Meetwaarden
-      required: true
-      selector:
-        object:
-          fields:
-            measured_at:
-              label: Meetmoment (optioneel, ISO 8601 met tijdzone)
-              selector:
-                text:
-            weight_kg:
-              label: Gewicht (kg)
-              selector:
-                number:
-                  min: 0.1
-                  max: 500
-                  step: 0.1
-                  mode: box
-            waist_cm:
-              label: Middelomtrek (cm)
-              selector:
-                number:
-                  min: 0.1
-                  max: 300
-                  step: 0.1
-                  mode: box
-            resting_heart_rate:
-              label: Rusthartslag (bpm)
-              selector:
-                number:
-                  min: 1
-                  max: 300
-                  step: 1
-                  mode: box
-            steps:
-              label: Stappen
-              selector:
-                number:
-                  min: 0
-                  step: 1
-                  mode: box
-            sleep_hours:
-              label: Slaap (uren)
-              selector:
-                number:
-                  min: 0
-                  max: 24
-                  step: 0.1
-                  mode: box
-            calorie_intake:
-              label: Calorie-inname
-              selector:
-                number:
-                  min: 0
-                  step: 1
-                  mode: box
-            protein_grams:
-              label: Eiwit (gram)
-              selector:
-                number:
-                  min: 0
-                  step: 1
-                  mode: box
-            notes:
-              label: Notities
-              selector:
-                text:
-                  multiline: true
   sequence:
     - action: calisthenics_tracker.add_body_measurement
-      data: "{{ measurement }}"
+      data:
+        weight_kg: "{{ states('input_number.calisthenics_invoer_gewicht') | float }}"
+        waist_cm: "{{ states('input_number.calisthenics_invoer_taille') | float }}"
