@@ -287,32 +287,49 @@ or a diagnosis.
 
 ## Dashboard and quick-entry scripts
 
-The [`examples`](./examples) folder contains examples using standard Home
-Assistant cards and scripts:
+The [`examples`](./examples) folder contains a ready-made dashboard view and
+the scripts it uses:
 
 - [`calisthenics_dashboard.yaml`](./examples/calisthenics_dashboard.yaml):
-  a dashboard with your active and next workouts, a workout suggestion by
-  goal, weekly totals, and progress.
+  a sections view with your training status, buttons to start session A or B,
+  the workout suggestion by goal, your schedule, beginner progress, and body
+  measurements.
 - [`calisthenics_tracker_scripts.yaml`](./examples/calisthenics_tracker_scripts.yaml):
-  reusable scripts to start or complete a workout, log an exercise, and add a
-  measurement. The `calisthenics_suggest_workout` script shows a suggestion
-  as a notification; on the dashboard, the goal selector replaces it.
+  scripts to start session A or B and to save a weight and waist measurement.
 
-For example, you can include the scripts from your `configuration.yaml`:
+The examples need a few things that the integration does not provide:
+
+| Requirement                                  | Used for                                      |
+| -------------------------------------------- | --------------------------------------------- |
+| [`button-card`][button-card] from HACS       | The large buttons and status cards            |
+| `input_number.calisthenics_invoer_gewicht`   | Weight input, for example 40–250 kg           |
+| `input_number.calisthenics_invoer_taille`    | Waist input, for example 50–200 cm            |
+| The [Hevy][hevy] integration (optional)      | Also starting the workout in Hevy             |
+
+[button-card]: https://github.com/custom-cards/button-card
+[hevy]: https://www.hevyapp.com/
+
+Create both number helpers under **Settings → Devices & services → Helpers**.
+If you do not use Hevy, remove the `hevy.start_workout` step from the two
+start scripts; otherwise those scripts stop with an error after starting the
+workout in the tracker.
+
+To install the scripts, copy the example file to your Home Assistant
+configuration directory and include it from your `configuration.yaml`:
 
 ```yaml
 script: !include calisthenics_tracker_scripts.yaml
 ```
 
-First copy the example file to your Home Assistant configuration directory,
-then reload your scripts. If you already have a `script:` section, merge the
-example scripts into your existing configuration. Exercise and measurement
-actions require input; use the scripts or call the actions directly from the
-Home Assistant interface.
+Then reload your scripts. If you already have a `script:` section, merge the
+example scripts into your existing configuration. Completing or cancelling a
+workout uses the integration's buttons. To log an exercise, call
+`calisthenics_tracker.log_exercise` from an automation, script, or
+**Developer tools → Actions**.
 
-To use the dashboard, create a dashboard with YAML configuration in Home
-Assistant and copy in the contents of the dashboard example. Update entity IDs
-if you have changed them.
+To use the dashboard, open a dashboard in edit mode, add a view, and paste the
+contents of the example into the view's YAML editor. Update entity IDs if you
+have changed them.
 
 ## Privacy, backups, and removing the integration
 

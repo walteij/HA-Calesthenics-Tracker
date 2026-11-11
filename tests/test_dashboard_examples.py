@@ -10,11 +10,24 @@ from homeassistant.components.script.config import async_validate_config_item
 from homeassistant.core import HomeAssistant
 
 from custom_components.calisthenics_tracker.button import BUTTONS
+from custom_components.calisthenics_tracker.const import (
+    DOMAIN,
+    SERVICE_ADD_BODY_MEASUREMENT,
+    SERVICE_START,
+)
 from custom_components.calisthenics_tracker.exercise_catalog import WORKBOOK_EXERCISES
 from custom_components.calisthenics_tracker.select import SUGGESTION_FOCUS
 from custom_components.calisthenics_tracker.sensor import SENSORS, SUGGESTION_SENSORS
 
 EXAMPLES = Path(__file__).parents[1] / "examples"
+HELPERS = {
+    "input_number.calisthenics_invoer_gewicht",
+    "input_number.calisthenics_invoer_taille",
+}
+
+
+def _load(name: str) -> Any:
+    return yaml.safe_load((EXAMPLES / name).read_text(encoding="utf-8"))
 
 
 def _dashboard_entities(value: Any) -> set[str]:
@@ -54,12 +67,12 @@ def _json_paths(value: Any, prefix: str = "") -> set[str]:
     return paths
 
 
-def test_dashboard_uses_only_entities_provided_by_the_integration() -> None:
-    dashboard = yaml.safe_load(
-        (EXAMPLES / "calisthenics_dashboard.yaml").read_text(encoding="utf-8")
-    )
-    assert dashboard["views"]
-    expected = (
+def test_dashboard_uses_only_integration_entities_and_documented_helpers() -> None:
+    dashboard = _load("calisthenics_dashboard.yaml")
+    scripts = _load("calisthenics_tracker_scripts.yaml")
+    assert dashboard["type"] == "sections"
+    assert dashboard["sections"]
+    integration_entities = (
         {f"sensor.calisthenics_{description.key}" for description in SENSORS}
         | {
             f"sensor.calisthenics_progress_{definition.exercise_id}"
@@ -72,50 +85,44 @@ def test_dashboard_uses_only_entities_provided_by_the_integration() -> None:
         }
         | {f"select.calisthenics_{SUGGESTION_FOCUS.key}"}
     )
-    assert _dashboard_entities(dashboard) <= expected
-    assert "select.calisthenics_suggestion_focus" in _dashboard_entities(dashboard)
-    card_types = _card_types(dashboard)
+    example_scripts = {f"script.{script_id}" for script_id in scripts}
+    used = _dashboard_entities(dashboard)
+    assert used <= integration_entities | example_scripts | HELPERS
+    assert example_scripts <= used
+    assert "select.calisthenics_suggestion_focus" in used
     assert {
+        "sections",
+        "heading",
         "tile",
-        "button",
-        "entities",
+        "markdown",
         "statistics-graph",
         "history-graph",
-        "markdown",
-        "grid",
-    } <= card_types
+        "custom:button-card",
+    } <= _card_types(dashboard)
 
 
-def test_parameterized_scripts_call_existing_actions() -> None:
-    scripts = yaml.safe_load(
-        (EXAMPLES / "calisthenics_tracker_scripts.yaml").read_text(encoding="utf-8")
-    )
-    expected_actions = {
-        "calisthenics_tracker.start_workout",
-        "calisthenics_tracker.suggest_workout",
-        "calisthenics_tracker.complete_workout",
-        "calisthenics_tracker.log_exercise",
-        "calisthenics_tracker.add_body_measurement",
-    }
-    assert {
-        script["sequence"][0]["action"] for script in scripts.values()
-    } == expected_actions
-    assert {"session_type"} <= scripts["calisthenics_start_workout"]["fields"].keys()
-    assert {
-        "exercise_id",
-        "variant",
-        "sets",
-        "rir",
-        "pain_score",
-    } <= scripts["calisthenics_log_exercise"]["fields"].keys()
-    assert "measurement" in scripts["calisthenics_add_body_measurement"]["fields"]
-    assert {
-        "calisthenics_tracker.suggest_workout",
-        "persistent_notification.create",
-    } <= {
+def test_scripts_call_existing_actions_with_documented_helpers() -> None:
+    scripts = _load("calisthenics_tracker_scripts.yaml")
+    tracker_actions = {
         action["action"]
-        for action in scripts["calisthenics_suggest_workout"]["sequence"]
+        for script in scripts.values()
+        for action in script["sequence"]
+        if action["action"].startswith(f"{DOMAIN}.")
     }
+    assert tracker_actions == {
+        f"{DOMAIN}.{SERVICE_START}",
+        f"{DOMAIN}.{SERVICE_ADD_BODY_MEASUREMENT}",
+    }
+    session_types = {
+        script["sequence"][0]["data"]["session_type"]
+        for script in scripts.values()
+        if script["sequence"][0]["action"] == f"{DOMAIN}.{SERVICE_START}"
+    }
+    assert session_types == {"A", "B"}
+    measurement = scripts["calisthenics_meting_opslaan"]["sequence"][0]["data"]
+    assert set(measurement) == {"weight_kg", "waist_cm"}
+    for helper in HELPERS:
+        assert any(helper in template for template in measurement.values())
 
 
 def test_translation_files_match_the_source_strings() -> None:
