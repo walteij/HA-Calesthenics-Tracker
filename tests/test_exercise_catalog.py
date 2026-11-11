@@ -1,11 +1,11 @@
-"""Workbook-derived exercise definitions."""
+"""Exercise catalog definitions."""
 
 from custom_components.calisthenics_tracker.exercise_catalog import WORKBOOK_EXERCISES
 
 
-def test_catalog_contains_all_workbook_exercises_without_assumed_ab_split() -> None:
-    assert len(WORKBOOK_EXERCISES) == 22
-    assert len({exercise.exercise_id for exercise in WORKBOOK_EXERCISES}) == 22
+def test_catalog_contains_unique_exercises_without_assumed_ab_split() -> None:
+    assert len(WORKBOOK_EXERCISES) == 30
+    assert len({exercise.exercise_id for exercise in WORKBOOK_EXERCISES}) == 30
     assert {exercise.level for exercise in WORKBOOK_EXERCISES} == {
         "beginner",
         "intermediate",

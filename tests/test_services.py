@@ -18,6 +18,7 @@ from custom_components.calisthenics_tracker.const import (
     SERVICE_ADD_BODY_MEASUREMENT,
     SERVICE_CANCEL,
     SERVICE_LOG_EXERCISE,
+    SERVICE_SUGGEST_WORKOUT,
 )
 from custom_components.calisthenics_tracker.coordinator import TrackerCoordinator
 from custom_components.calisthenics_tracker.exercise_catalog import WORKBOOK_EXERCISES
@@ -28,6 +29,7 @@ from custom_components.calisthenics_tracker.models import (
 from custom_components.calisthenics_tracker.services import (
     ADD_BODY_MEASUREMENT_SCHEMA,
     LOG_EXERCISE_SCHEMA,
+    SUGGEST_WORKOUT_SCHEMA,
     register_services,
     unregister_services,
 )
@@ -335,6 +337,41 @@ async def test_add_body_measurement_action_returns_persisted_id() -> None:
     assert result["measured_at"]
 
 
+def test_suggest_workout_action_schema_accepts_only_supported_focuses() -> None:
+    assert SUGGEST_WORKOUT_SCHEMA({"focus": "core_strength"}) == {
+        "focus": "core_strength"
+    }
+    with pytest.raises(Invalid):
+        SUGGEST_WORKOUT_SCHEMA({"focus": "unsupported"})
+
+
+@pytest.mark.asyncio
+async def test_suggest_workout_action_uses_profile_level_and_catalog() -> None:
+    hass = _FakeHass()
+    storage = _MemoryStorage(
+        TrackerData(_profile(), exercise_definitions=WORKBOOK_EXERCISES)
+    )
+    coordinator = TrackerCoordinator(hass, storage, storage.data)
+    hass.config_entries.async_entries = lambda domain: [
+        SimpleNamespace(state=ConfigEntryState.LOADED, runtime_data=coordinator)
+    ]
+    register_services(hass)
+    handler, schema = hass.services.handlers[f"{DOMAIN}.{SERVICE_SUGGEST_WORKOUT}"]
+
+    result = await handler(
+        SimpleNamespace(data=schema({"focus": "core_strength"}))
+    )
+
+    assert result["focus"] == "core_strength"
+    assert result["level"] == "beginner"
+    assert [exercise["exercise_id"] for exercise in result["exercises"]] == [
+        "beginner_dead_bug",
+        "beginner_plank",
+        "beginner_side_plank",
+        "beginner_glute_bridge",
+    ]
+
+
 @pytest.mark.asyncio
 async def test_cancel_workout_action_returns_cancelled_status() -> None:
     hass = _FakeHass()
@@ -359,8 +396,8 @@ def test_service_registration_is_idempotent() -> None:
     hass = _FakeHass()
     register_services(hass)
     register_services(hass)
-    assert hass.services.register_calls == 5
-    assert len(hass.services.handlers) == 5
+    assert hass.services.register_calls == 6
+    assert len(hass.services.handlers) == 6
 
 
 def test_services_are_removed_after_last_entry_unloads_and_can_reload() -> None:
@@ -373,7 +410,7 @@ def test_services_are_removed_after_last_entry_unloads_and_can_reload() -> None:
     assert hass.services.handlers == {}
 
     register_services(hass)
-    assert len(hass.services.handlers) == 5
+    assert len(hass.services.handlers) == 6
 
 
 def test_services_remain_when_another_entry_is_still_loaded() -> None:
@@ -384,4 +421,4 @@ def test_services_remain_when_another_entry_is_still_loaded() -> None:
     ]
     register_services(hass)
     unregister_services(hass, "entry")
-    assert len(hass.services.handlers) == 5
+    assert len(hass.services.handlers) == 6

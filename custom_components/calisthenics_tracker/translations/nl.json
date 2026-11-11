@@ -116,6 +116,9 @@
     "unknown_exercise": {
       "message": "Deze oefening-ID staat niet in de lokale oefeningencatalogus."
     },
+    "workout_plan_unavailable": {
+      "message": "Het trainingsvoorstel is niet beschikbaar omdat oefeningen ontbreken."
+    },
     "invalid_exercise": {
       "message": "Kies een oefening uit de catalogus."
     },
@@ -177,6 +180,16 @@
         "started_at": {
           "name": "Starttijd",
           "description": "Optionele ISO 8601 tijd met tijdzone."
+        }
+      }
+    },
+    "suggest_workout": {
+      "name": "Training voorstellen",
+      "description": "Geef een doelgerichte oefenselectie voor het niveau in je profiel.",
+      "fields": {
+        "focus": {
+          "name": "Focus",
+          "description": "Kies het hoofddoel voor het trainingsvoorstel."
         }
       }
     },

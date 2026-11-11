@@ -23,6 +23,7 @@ from .calculations import (
     weight_change_since_start,
 )
 from .coordinator import TrackerCoordinator
+from .exercise_tutorials import youtube_tutorial
 from .models import ExerciseDefinition
 from .progression import (
     analyze_exercise_progress,
@@ -294,6 +295,7 @@ class ExerciseProgressSensor(SensorEntity):
                 }
                 for session in progress.recent_sessions
             ],
+            **youtube_tutorial(self.definition.exercise_id, self.definition.name),
         }
         if progress.status.value == "regression_recommended":
             attributes["suggested_regression"] = self.definition.regression

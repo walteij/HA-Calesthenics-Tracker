@@ -15,6 +15,7 @@ from homeassistant.util import dt as dt_util
 
 from custom_components.calisthenics_tracker import async_remove_entry
 from custom_components.calisthenics_tracker.coordinator import TrackerCoordinator
+from custom_components.calisthenics_tracker.exercise_catalog import WORKBOOK_EXERCISES
 from custom_components.calisthenics_tracker.models import (
     BodyMeasurement,
     ExerciseLog,
@@ -83,11 +84,11 @@ async def test_storage_load_and_save_round_trip() -> None:
         store = _FakeStore(path=path, loaded=None)
         storage = _make_storage(store)
         initial = await storage.async_load(_profile())
-        assert len(initial.exercise_definitions) == 22
+        assert len(initial.exercise_definitions) == len(WORKBOOK_EXERCISES)
         await storage.async_save(initial)
         loaded = await storage.async_load(_profile())
         assert loaded.to_dict()["profile"]["name"] == "Walter"
-        assert len(loaded.exercise_definitions) == 22
+        assert len(loaded.exercise_definitions) == len(WORKBOOK_EXERCISES)
 
 
 @pytest.mark.asyncio
@@ -129,7 +130,7 @@ def test_storage_migrates_version_zero_payload() -> None:
     )
     data = TrackerData.from_dict(migrated)
     assert data.profile.current_level == "beginner"
-    assert len(data.exercise_definitions) == 22
+    assert len(data.exercise_definitions) == len(WORKBOOK_EXERCISES)
 
 
 def test_storage_migrates_phase_one_version() -> None:
@@ -150,7 +151,7 @@ def test_storage_migrates_phase_one_version() -> None:
     migrated = migrate_payload(1, previous)
     data = TrackerData.from_dict(migrated)
     assert data.profile.name == "Walter"
-    assert len(data.exercise_definitions) == 22
+    assert len(data.exercise_definitions) == len(WORKBOOK_EXERCISES)
     assert data.workouts[0].status == "active"
 
 
@@ -161,6 +162,40 @@ def test_storage_migrates_phase_two_version() -> None:
     data = TrackerData.from_dict(migrated)
     assert data.profile.name == "Walter"
     assert data.body_measurements == ()
+
+
+def test_storage_migrates_existing_catalog_without_dropping_definitions() -> None:
+    new_exercise_ids = {
+        "beginner_dead_bug",
+        "beginner_side_plank",
+        "beginner_hollow_body_hold",
+        "beginner_jumping_jack",
+        "beginner_mountain_climber",
+        "beginner_high_knees",
+        "beginner_burpee",
+        "advanced_hanging_knee_raise",
+    }
+    old_definitions = [
+        exercise.to_dict()
+        for exercise in WORKBOOK_EXERCISES
+        if exercise.exercise_id not in new_exercise_ids
+    ]
+    old_definitions[0]["name"] = "Preserved custom name"
+    previous = {
+        "schema_version": 3,
+        "profile": _profile().to_dict(),
+        "workouts": [],
+        "exercise_definitions": old_definitions,
+    }
+
+    migrated = migrate_payload(3, previous)
+    data = TrackerData.from_dict(migrated)
+
+    assert len(data.exercise_definitions) == len(WORKBOOK_EXERCISES)
+    assert data.exercise_definitions[0].name == "Preserved custom name"
+    assert "beginner_dead_bug" in {
+        item.exercise_id for item in data.exercise_definitions
+    }
 
 
 @pytest.mark.asyncio
@@ -234,7 +269,7 @@ async def test_real_store_restores_active_workout_and_measurement_after_restart(
         restored = await restarted_storage.async_load(_profile())
 
         assert restored.profile.name == "Walter"
-        assert len(restored.exercise_definitions) == 22
+        assert len(restored.exercise_definitions) == len(WORKBOOK_EXERCISES)
         assert len(restored.workouts) == 1
         assert restored.workouts[0].workout_id == started.workout_id
         assert restored.workouts[0].status == "active"

@@ -17,6 +17,23 @@ start_workout:
       example: "2026-11-08T10:00:00+01:00"
       selector:
         text:
+suggest_workout:
+  name: Suggest workout
+  description: Return a goal-focused exercise routine for the level in your profile.
+  fields:
+    focus:
+      name: Focus
+      description: Choose the main goal for the suggested routine.
+      required: true
+      selector:
+        select:
+          options:
+            - label: Core strength
+              value: core_strength
+            - label: Conditioning
+              value: conditioning
+            - label: Support fat loss
+              value: fat_loss_support
 complete_workout:
   name: Complete workout
   description: Complete and persist the active workout and update weekly totals.

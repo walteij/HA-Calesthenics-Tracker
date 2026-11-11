@@ -254,3 +254,6 @@ def test_graduation_and_per_exercise_progress_sensors_expose_bounded_state() -> 
     progress_sensor = ExerciseProgressSensor(coordinator, "entry", definition)
     assert progress_sensor.native_value == "plateau"
     assert len(progress_sensor.extra_state_attributes["recent_sessions"]) == 3
+    assert progress_sensor.extra_state_attributes["tutorial_url"] == (
+        "https://www.youtube.com/watch?v=IODxDxX7oi4"
+    )

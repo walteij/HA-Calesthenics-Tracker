@@ -116,6 +116,9 @@
     "unknown_exercise": {
       "message": "The exercise ID is not in the local exercise catalog."
     },
+    "workout_plan_unavailable": {
+      "message": "The workout suggestion is unavailable because its exercises are missing."
+    },
     "invalid_exercise": {
       "message": "Select an exercise from the catalog."
     },
@@ -177,6 +180,16 @@
         "started_at": {
           "name": "Start time",
           "description": "Optional timezone-aware ISO 8601 time."
+        }
+      }
+    },
+    "suggest_workout": {
+      "name": "Suggest workout",
+      "description": "Return a goal-focused exercise routine for the level in your profile.",
+      "fields": {
+        "focus": {
+          "name": "Focus",
+          "description": "Choose the main goal for the suggested routine."
         }
       }
     },

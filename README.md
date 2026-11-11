@@ -10,6 +10,8 @@ available as sensors for dashboards and automations.
   targets.
 - Start an A or B workout, record exercises and sets, and complete or cancel
   the workout.
+- Get a suggested workout for core strength, conditioning, or supporting fat
+  loss, based on your profile level.
 - For each exercise, record the variation you performed, reps per set, RIR
   (*repetitions in reserve*), pain score, and notes.
 - Track body weight, waist circumference, resting heart rate, steps, sleep,
@@ -20,11 +22,33 @@ available as sensors for dashboards and automations.
 - Follow progression or regression suggestions and beginner graduation
   readiness.
 
-The integration does not create a personalized training plan or automatically
-assign exercises to session A or B. Choose A or B when you start a workout and
-record the exercises you performed.
+The integration does not create a long-term personalized training plan or
+automatically assign exercises to session A or B. It can suggest an individual
+workout based on your goal and profile level.
 
 ## Installation
+
+### Install with HACS / MarketPlace
+
+The marketplace (formerly known as HACS) is a community store for Home Assistant integrations; it is separate from the official Home Assistant add-on store. If **Calisthenics Tracker** is available in the HACS integration catalog, find it under **HACS → Integrations **and select **Download**.
+
+If it is not listed in the catalog, add this GitHub repository as a custom repository:
+
+1. In HACS, open **Integrations** and select the three-dot menu.
+2. Select **Custom repositories**.
+3. Enter `https://github.com/walteij/HA-Calesthenics-Tracker` and choose
+   **Integration** as the category.
+4. Add the repository, find **Calisthenics Tracker** in HACS, and select
+   **Download**.
+5. Restart Home Assistant.
+6. Go to **Settings → Devices & services → Add integration**, search for
+   **Calisthenics Tracker**, and complete setup.
+
+Adding a custom repository only makes it available in your HACS instance; it
+does not publish the integration to the default HACS catalog or an official
+Home Assistant marketplace.
+
+### Manual installation
 
 1. In your Home Assistant configuration directory, create the folder
    `custom_components/calisthenics_tracker`.
@@ -78,7 +102,7 @@ notes: Controlled tempo
 ```
 
 `exercise_id` is the stable ID of an exercise in the catalog. The catalog
-contains 22 exercises across beginner, intermediate, and advanced levels. You
+contains 30 exercises across beginner, intermediate, and advanced levels. You
 can find the exercise IDs in
 [`exercise_catalog.py`](./custom_components/calisthenics_tracker/exercise_catalog.py).
 Enter the reps for each set under `sets`; every value must be positive. `rir`
@@ -88,6 +112,29 @@ is the number of additional reps you estimate you could have performed (0–5).
 Logging the same exercise again during the same workout replaces its previous
 log, so you can correct an entry without creating a duplicate. A pain score
 of 4 or higher triggers a warning. This is not a medical assessment.
+
+### Get a goal-focused workout suggestion
+
+Call `calisthenics_tracker.suggest_workout` with one of these focuses:
+
+```yaml
+focus: core_strength
+```
+
+The other options are `conditioning` and `fat_loss_support`. The action returns
+a routine selected for the level in your profile, with exercise IDs and
+prescriptions. It does not start a workout or log exercises; start an A or B
+workout separately, then log the exercises you performed. The dashboard and
+scripts in the [`examples`](./examples) folder include buttons that show the
+suggestion in a Home Assistant notification.
+
+The catalog includes extra core and conditioning exercises for these
+suggestions. Conditioning can support energy expenditure, but does not
+guarantee fat loss; nutrition and longer-term energy balance also matter.
+Each suggested exercise includes a YouTube link. Selected exercises link to a
+specific tutorial; the remaining exercises open YouTube results for an
+exercise-specific form tutorial. Progress sensors also expose the link as the
+`tutorial_url` attribute.
 
 ### 3. Complete the workout
 
@@ -119,17 +166,17 @@ resting_heart_rate: 58
 All measurement fields are optional, so you can record just your weight if
 you prefer. Available fields:
 
-| Field | Meaning |
-| --- | --- |
-| `weight_kg` | Body weight in kilograms |
-| `waist_cm` | Waist circumference in centimeters |
-| `resting_heart_rate` | Resting heart rate in beats per minute |
-| `steps` | Number of steps |
-| `sleep_hours` | Sleep duration in hours |
-| `calorie_intake` | Calorie intake |
-| `protein_grams` | Protein intake in grams |
-| `measured_at` | Optional measurement time as ISO 8601 with timezone |
-| `notes` | Optional note |
+| Field                  | Meaning                                             |
+| ---------------------- | --------------------------------------------------- |
+| `weight_kg`          | Body weight in kilograms                            |
+| `waist_cm`           | Waist circumference in centimeters                  |
+| `resting_heart_rate` | Resting heart rate in beats per minute              |
+| `steps`              | Number of steps                                     |
+| `sleep_hours`        | Sleep duration in hours                             |
+| `calorie_intake`     | Calorie intake                                      |
+| `protein_grams`      | Protein intake in grams                             |
+| `measured_at`        | Optional measurement time as ISO 8601 with timezone |
+| `notes`              | Optional note                                       |
 
 ## View your data
 
@@ -137,20 +184,20 @@ After setup, sensors named **Calisthenics ...** are available in Home
 Assistant. Find them under **Settings → Devices & services → Calisthenics
 Tracker → Entities**. Key sensors include:
 
-| Sensor | What it shows |
-| --- | --- |
-| `sensor.calisthenics_active_workout` | Whether a workout is active |
-| `sensor.calisthenics_next_workout` | The next scheduled session, A or B |
-| `sensor.calisthenics_sessions_this_week` | Completed workouts since Monday |
-| `sensor.calisthenics_training_minutes_this_week` | Training minutes since Monday |
-| `sensor.calisthenics_current_level` | The level in your profile |
-| `sensor.calisthenics_current_week` | Training week based on your profile start date |
-| `sensor.calisthenics_latest_weight` | Most recently recorded weight |
-| `sensor.calisthenics_weight_7_day_average` | Average of measurements from today and the previous six calendar days |
-| `sensor.calisthenics_weight_change_since_start` | Latest weight minus first recorded weight |
-| `sensor.calisthenics_latest_waist` | Most recently recorded waist measurement |
-| `sensor.calisthenics_average_daily_steps_7_days` | Average steps per measured day over the last seven calendar days |
-| `sensor.calisthenics_average_sleep_7_days` | Average sleep per measured day over the last seven calendar days |
+| Sensor                                             | What it shows                                                         |
+| -------------------------------------------------- | --------------------------------------------------------------------- |
+| `sensor.calisthenics_active_workout`             | Whether a workout is active                                           |
+| `sensor.calisthenics_next_workout`               | The next scheduled session, A or B                                    |
+| `sensor.calisthenics_sessions_this_week`         | Completed workouts since Monday                                       |
+| `sensor.calisthenics_training_minutes_this_week` | Training minutes since Monday                                         |
+| `sensor.calisthenics_current_level`              | The level in your profile                                             |
+| `sensor.calisthenics_current_week`               | Training week based on your profile start date                        |
+| `sensor.calisthenics_latest_weight`              | Most recently recorded weight                                         |
+| `sensor.calisthenics_weight_7_day_average`       | Average of measurements from today and the previous six calendar days |
+| `sensor.calisthenics_weight_change_since_start`  | Latest weight minus first recorded weight                             |
+| `sensor.calisthenics_latest_waist`               | Most recently recorded waist measurement                              |
+| `sensor.calisthenics_average_daily_steps_7_days` | Average steps per measured day over the last seven calendar days      |
+| `sensor.calisthenics_average_sleep_7_days`       | Average sleep per measured day over the last seven calendar days      |
 
 One measurement day is enough to calculate a seven-day average; days without
 measurements are ignored. If there are no usable measurements in the period,
@@ -183,8 +230,8 @@ Assistant cards and scripts:
 - [`calisthenics_dashboard.yaml`](./examples/calisthenics_dashboard.yaml):
   a dashboard with your active and next workouts, weekly totals, and progress.
 - [`calisthenics_tracker_scripts.yaml`](./examples/calisthenics_tracker_scripts.yaml):
-  reusable scripts to start or complete a workout, log an exercise, and add a
-  measurement.
+  reusable scripts to suggest, start, or complete a workout, log an exercise,
+  and add a measurement.
 
 For example, you can include the scripts from your `configuration.yaml`:
 

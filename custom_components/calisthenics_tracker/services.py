@@ -22,15 +22,24 @@ from .const import (
     SERVICE_COMPLETE,
     SERVICE_LOG_EXERCISE,
     SERVICE_START,
+    SERVICE_SUGGEST_WORKOUT,
     SESSION_TYPES,
+    WORKOUT_FOCI,
 )
 from .coordinator import TrackerCoordinator
+from .workout_plans import (
+    WorkoutPlanUnavailable,
+    suggest_workout as build_workout_suggestion,
+)
 
 START_SCHEMA = probatio.Schema(
     {
         probatio.Required("session_type"): probatio.In(SESSION_TYPES),
         probatio.Optional("started_at"): str,
     }
+)
+SUGGEST_WORKOUT_SCHEMA = probatio.Schema(
+    {probatio.Required("focus"): probatio.In(WORKOUT_FOCI)}
 )
 COMPLETE_SCHEMA = probatio.Schema(
     {
@@ -204,11 +213,26 @@ def register_services(hass: HomeAssistant) -> None:
             "measured_at": measurement.measured_at.isoformat(),
         }
 
+    async def suggest(call: ServiceCall) -> ServiceResponse:
+        coordinator = loaded_coordinator(hass)
+        try:
+            return build_workout_suggestion(
+                call.data["focus"],
+                coordinator.data.profile.current_level,
+                coordinator.data.exercise_definitions,
+            )
+        except WorkoutPlanUnavailable as err:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="workout_plan_unavailable",
+            ) from err
+
     for name, handler, schema in (
         (SERVICE_START, start, START_SCHEMA),
         (SERVICE_COMPLETE, complete, COMPLETE_SCHEMA),
         (SERVICE_CANCEL, cancel, CANCEL_SCHEMA),
         (SERVICE_LOG_EXERCISE, log_exercise, LOG_EXERCISE_SCHEMA),
+        (SERVICE_SUGGEST_WORKOUT, suggest, SUGGEST_WORKOUT_SCHEMA),
         (
             SERVICE_ADD_BODY_MEASUREMENT,
             add_body_measurement,
@@ -237,6 +261,7 @@ def unregister_services(hass: HomeAssistant, unloading_entry_id: str) -> None:
         SERVICE_COMPLETE,
         SERVICE_CANCEL,
         SERVICE_LOG_EXERCISE,
+        SERVICE_SUGGEST_WORKOUT,
         SERVICE_ADD_BODY_MEASUREMENT,
     ):
         if hass.services.has_service(DOMAIN, name):

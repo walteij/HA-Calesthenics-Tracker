@@ -16,6 +16,41 @@ calisthenics_start_workout:
       data:
         session_type: "{{ session_type }}"
 
+calisthenics_suggest_workout:
+  alias: Calisthenics - training voorstellen
+  description: Toon een doelgerichte oefenselectie als Home Assistant-melding.
+  mode: single
+  fields:
+    focus:
+      name: Trainingsdoel
+      required: true
+      selector:
+        select:
+          options:
+            - label: Corekracht
+              value: core_strength
+            - label: Conditie
+              value: conditioning
+            - label: Vetverlies ondersteunen
+              value: fat_loss_support
+  sequence:
+    - action: calisthenics_tracker.suggest_workout
+      data:
+        focus: "{{ focus }}"
+      response_variable: suggestion
+    - action: persistent_notification.create
+      data:
+        notification_id: calisthenics_workout_suggestion
+        title: "{{ suggestion.title }} ({{ suggestion.level }})"
+        message: >-
+          {{ suggestion.format }}
+
+          {% for exercise in suggestion.exercises %}
+          - **{{ exercise.name }}**: {{ exercise.prescription }} — [{{ exercise.tutorial_label }}]({{ exercise.tutorial_url }})
+          {% endfor %}
+
+          {{ suggestion.note }}
+
 calisthenics_complete_workout:
   alias: Calisthenics - training afronden
   description: Rond de actieve training af en sla optionele notities op.

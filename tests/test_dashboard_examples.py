@@ -85,6 +85,7 @@ def test_parameterized_scripts_call_existing_actions() -> None:
     )
     expected_actions = {
         "calisthenics_tracker.start_workout",
+        "calisthenics_tracker.suggest_workout",
         "calisthenics_tracker.complete_workout",
         "calisthenics_tracker.log_exercise",
         "calisthenics_tracker.add_body_measurement",
@@ -101,6 +102,13 @@ def test_parameterized_scripts_call_existing_actions() -> None:
         "pain_score",
     } <= scripts["calisthenics_log_exercise"]["fields"].keys()
     assert "measurement" in scripts["calisthenics_add_body_measurement"]["fields"]
+    assert {
+        "calisthenics_tracker.suggest_workout",
+        "persistent_notification.create",
+    } <= {
+        action["action"]
+        for action in scripts["calisthenics_suggest_workout"]["sequence"]
+    }
 
 
 def test_translation_files_match_the_source_strings() -> None:

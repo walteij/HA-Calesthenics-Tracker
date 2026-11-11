@@ -15,7 +15,7 @@ from .models import InvalidTrackerData, Profile, TrackerData
 
 def migrate_payload(old_version: int, payload: Any) -> dict[str, Any]:
     """Upgrade prior profile/workout schemas while retaining all existing records."""
-    if old_version not in (0, 1, 2) or not isinstance(payload, dict):
+    if old_version not in (0, 1, 2, 3) or not isinstance(payload, dict):
         raise InvalidTrackerData("Unsupported storage migration")
     migrated = deepcopy(payload)
     if migrated.get("schema_version", old_version) != old_version:
@@ -25,10 +25,21 @@ def migrate_payload(old_version: int, payload: Any) -> dict[str, Any]:
             if not isinstance(workout, dict):
                 raise InvalidTrackerData("Invalid legacy workout")
             workout.setdefault("exercises", [])
-    if not migrated.get("exercise_definitions"):
+    exercise_definitions = migrated.get("exercise_definitions")
+    if not exercise_definitions:
         migrated["exercise_definitions"] = [
             exercise.to_dict() for exercise in WORKBOOK_EXERCISES
         ]
+    elif isinstance(exercise_definitions, list) and all(
+        isinstance(item, dict) and isinstance(item.get("exercise_id"), str)
+        for item in exercise_definitions
+    ):
+        existing_ids = {item["exercise_id"] for item in exercise_definitions}
+        exercise_definitions.extend(
+            exercise.to_dict()
+            for exercise in WORKBOOK_EXERCISES
+            if exercise.exercise_id not in existing_ids
+        )
     migrated["schema_version"] = STORAGE_VERSION
     migrated.setdefault("body_measurements", [])
     return TrackerData.from_dict(migrated).to_dict()

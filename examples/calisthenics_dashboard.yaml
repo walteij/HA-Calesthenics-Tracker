@@ -54,6 +54,35 @@ views:
             entity: sensor.calisthenics_beginner_graduation_readiness
             name: Beginner-graduatie
             icon: mdi:medal-outline
+      - type: grid
+        title: Trainingsvoorstel
+        columns: 3
+        square: false
+        cards:
+          - type: button
+            name: Corekracht
+            icon: mdi:human
+            tap_action:
+              action: perform-action
+              perform_action: script.calisthenics_suggest_workout
+              data:
+                focus: core_strength
+          - type: button
+            name: Conditie
+            icon: mdi:run
+            tap_action:
+              action: perform-action
+              perform_action: script.calisthenics_suggest_workout
+              data:
+                focus: conditioning
+          - type: button
+            name: Vetverlies ondersteunen
+            icon: mdi:fire
+            tap_action:
+              action: perform-action
+              perform_action: script.calisthenics_suggest_workout
+              data:
+                focus: fat_loss_support
       - type: entities
         title: Voortgang
         show_header_toggle: false
