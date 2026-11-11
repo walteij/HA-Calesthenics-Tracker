@@ -1,115 +1,748 @@
-title: Calisthenics
-views:
-  - title: Training
-    path: calisthenics
-    icon: mdi:dumbbell
+# ============================================================
+# Calisthenics Tracker – Example Dashboard View
+# ============================================================
+# Requires:
+#   - Calisthenics Tracker integration (custom_components/calisthenics_tracker)
+#   - custom:button-card (HACS / Marketplace)
+#   - input_number.calisthenics_invoer_gewicht  (helper)
+#   - input_number.calisthenics_invoer_taille   (helper)
+#   - script.calisthenics_training_a_starten
+#   - script.calisthenics_training_b_starten
+#   - script.calisthenics_meting_opslaan
+# ============================================================
+
+type: sections
+title: Calesthenics
+path: calesthenics
+icon: mdi:weight-lifter
+max_columns: 4
+sections:
+
+  # ── Section 1: Training status ──────────────────────────────
+  - type: grid
     cards:
+      - type: heading
+        heading: Training status
+        icon: mdi:weight-lifter
+
+      - type: custom:button-card
+        entity: sensor.calisthenics_active_workout
+        name: Actieve training
+        icon: mdi:weight-lifter
+        show_state: true
+        show_label: false
+        styles:
+          card:
+            - min-height: 90px
+            - border-radius: 18px
+            - padding: 14px
+            - background: >-
+                linear-gradient(135deg, rgba(20,83,45,.96),
+                rgba(10,45,27,.98))
+            - border: 1px solid rgba(255,255,255,.10)
+          grid:
+            - grid-template-areas: '"i n" "i s"'
+            - grid-template-columns: 50px 1fr
+          icon:
+            - width: 34px
+            - color: "#4ade80"
+          name:
+            - justify-self: start
+            - font-size: 13px
+            - font-weight: 700
+            - color: white
+          state:
+            - justify-self: start
+            - font-size: 22px
+            - font-weight: 700
+            - color: white
+
+      - type: custom:button-card
+        entity: sensor.calisthenics_next_workout
+        name: Volgende sessie
+        icon: mdi:calendar-arrow-right
+        show_state: true
+        show_label: true
+        triggers_update:
+          - sensor.calisthenics_next_workout
+        label: >-
+          [[[ const d = entity.attributes?.scheduled_date; return d ? d : '';
+          ]]]
+        styles:
+          card:
+            - min-height: 90px
+            - border-radius: 18px
+            - padding: 14px
+            - background: >-
+                linear-gradient(135deg, rgba(31,73,125,.96),
+                rgba(16,30,49,.98))
+            - border: 1px solid rgba(255,255,255,.10)
+          grid:
+            - grid-template-areas: '"i n" "i s" "i l"'
+            - grid-template-columns: 50px 1fr
+          icon:
+            - width: 34px
+            - color: "#64b5f6"
+          name:
+            - justify-self: start
+            - font-size: 13px
+            - font-weight: 700
+            - color: white
+          state:
+            - justify-self: start
+            - font-size: 22px
+            - font-weight: 700
+            - color: white
+          label:
+            - justify-self: start
+            - font-size: 11px
+            - color: rgba(255,255,255,.62)
+
+      - type: custom:button-card
+        entity: sensor.calisthenics_current_level
+        name: Niveau
+        icon: mdi:signal-cellular-3
+        show_state: true
+        show_label: false
+        styles:
+          card:
+            - min-height: 90px
+            - border-radius: 18px
+            - padding: 14px
+            - background: >-
+                linear-gradient(135deg, rgba(88,28,72,.96),
+                rgba(48,16,38,.98))
+            - border: 1px solid rgba(255,255,255,.10)
+          grid:
+            - grid-template-areas: '"i n" "i s"'
+            - grid-template-columns: 50px 1fr
+          icon:
+            - width: 34px
+            - color: "#f48fb1"
+          name:
+            - justify-self: start
+            - font-size: 13px
+            - font-weight: 700
+            - color: white
+          state:
+            - justify-self: start
+            - font-size: 22px
+            - font-weight: 700
+            - color: white
+            - text-transform: capitalize
+
+      - type: custom:button-card
+        entity: sensor.calisthenics_beginner_graduation_readiness
+        name: Graduatie
+        icon: mdi:medal
+        show_state: true
+        show_label: false
+        styles:
+          card:
+            - min-height: 90px
+            - border-radius: 18px
+            - padding: 14px
+            - background: >-
+                linear-gradient(135deg, rgba(124,45,18,.96),
+                rgba(67,25,10,.98))
+            - border: 1px solid rgba(255,255,255,.10)
+          grid:
+            - grid-template-areas: '"i n" "i s"'
+            - grid-template-columns: 50px 1fr
+          icon:
+            - width: 34px
+            - color: "#ff8a65"
+          name:
+            - justify-self: start
+            - font-size: 13px
+            - font-weight: 700
+            - color: white
+          state:
+            - justify-self: start
+            - font-size: 18px
+            - font-weight: 700
+            - color: white
+
+      - type: grid
+        columns: 3
+        square: false
+        cards:
+          - type: custom:button-card
+            entity: sensor.calisthenics_current_week
+            name: Week
+            icon: mdi:calendar-week
+            show_state: true
+            show_label: false
+            styles:
+              card:
+                - min-height: 78px
+                - border-radius: 18px
+                - padding: 12px
+                - background: >-
+                    linear-gradient(135deg, rgba(45,55,72,.96),
+                    rgba(25,30,39,.98))
+                - border: 1px solid rgba(255,255,255,.10)
+              grid:
+                - grid-template-areas: '"i n" "i s"'
+                - grid-template-columns: 42px 1fr
+              icon:
+                - width: 28px
+                - color: "#90caf9"
+              name:
+                - justify-self: start
+                - font-size: 12px
+                - font-weight: 700
+                - color: white
+              state:
+                - justify-self: start
+                - font-size: 20px
+                - font-weight: 700
+                - color: white
+
+          - type: custom:button-card
+            entity: sensor.calisthenics_sessions_this_week
+            name: Sessies
+            icon: mdi:calendar-check
+            show_state: true
+            show_label: false
+            styles:
+              card:
+                - min-height: 78px
+                - border-radius: 18px
+                - padding: 12px
+                - background: >-
+                    linear-gradient(135deg, rgba(45,55,72,.96),
+                    rgba(25,30,39,.98))
+                - border: 1px solid rgba(255,255,255,.10)
+              grid:
+                - grid-template-areas: '"i n" "i s"'
+                - grid-template-columns: 42px 1fr
+              icon:
+                - width: 28px
+                - color: "#81c784"
+              name:
+                - justify-self: start
+                - font-size: 12px
+                - font-weight: 700
+                - color: white
+              state:
+                - justify-self: start
+                - font-size: 20px
+                - font-weight: 700
+                - color: white
+
+          - type: custom:button-card
+            entity: sensor.calisthenics_training_minutes_this_week
+            name: Minuten
+            icon: mdi:timer-outline
+            show_state: true
+            show_label: false
+            styles:
+              card:
+                - min-height: 78px
+                - border-radius: 18px
+                - padding: 12px
+                - background: >-
+                    linear-gradient(135deg, rgba(45,55,72,.96),
+                    rgba(25,30,39,.98))
+                - border: 1px solid rgba(255,255,255,.10)
+              grid:
+                - grid-template-areas: '"i n" "i s"'
+                - grid-template-columns: 42px 1fr
+              icon:
+                - width: 28px
+                - color: "#ffb74d"
+              name:
+                - justify-self: start
+                - font-size: 12px
+                - font-weight: 700
+                - color: white
+              state:
+                - justify-self: start
+                - font-size: 20px
+                - font-weight: 700
+                - color: white
+
+  # ── Section 2: Training starten ─────────────────────────────
+  - type: grid
+    cards:
+      - type: heading
+        heading: Training starten
+        icon: mdi:play-circle
+
+      - type: button
+        entity: script.calisthenics_training_a_starten
+        name: Start Training A
+        icon: mdi:arm-flex
+        show_state: false
+        tap_action:
+          action: perform-action
+          perform_action: script.turn_on
+          target:
+            entity_id: script.calisthenics_training_a_starten
+          confirmation:
+            text: Training A starten? Er wordt een Hevy-draft aangemaakt.
+
+      - type: button
+        entity: script.calisthenics_training_b_starten
+        name: Start Training B
+        icon: mdi:run-fast
+        show_state: false
+        tap_action:
+          action: perform-action
+          perform_action: script.turn_on
+          target:
+            entity_id: script.calisthenics_training_b_starten
+          confirmation:
+            text: Training B starten? Er wordt een Hevy-draft aangemaakt.
+
+      - type: button
+        entity: button.calisthenics_complete_workout
+        name: Training afronden
+        icon: mdi:check-circle-outline
+
+      - type: button
+        entity: button.calisthenics_cancel_workout
+        name: Training annuleren
+        icon: mdi:cancel
+
+      - type: heading
+        heading: Planning
+        icon: mdi:calendar
+
+      - type: calendar
+        entities:
+          - calendar.calisthenics_planning
+        initial_view: listWeek
+        title: Calisthenics planning
+
+  # ── Section 3: Workout voorstel ─────────────────────────────
+  - type: grid
+    cards:
+      - type: heading
+        heading: Workout voorstel
+        icon: mdi:lightbulb-on-outline
+        badges:
+          - type: entity
+            entity: sensor.calisthenics_suggestion_level
+            show_state: true
+            color: purple
+
+      - type: tile
+        entity: select.calisthenics_suggestion_focus
+        name: Trainingsdoel
+        icon: mdi:target
+        features:
+          - type: select-options
+
       - type: markdown
-        title: Volgende training
+        title: ""
+        entity_id:
+          - sensor.calisthenics_suggestion_title
+          - sensor.calisthenics_suggestion_exercises
+          - sensor.calisthenics_suggestion_format
+          - sensor.calisthenics_suggestion_note
+          - sensor.calisthenics_suggestion_level
+          - sensor.calisthenics_suggestion_exercise_count
         content: >-
-          {% set session = states('sensor.calisthenics_next_workout') %}
-          {% set date = state_attr('sensor.calisthenics_next_workout', 'scheduled_date') %}
-          {% if session in ['A', 'B'] and date %}
-          **Sessie {{ session }}** op **{{ date }}**.
+          {% set titel = states('sensor.calisthenics_suggestion_title') %}
+          {% set niveau = states('sensor.calisthenics_suggestion_level') %}
+          {% set opzet = states('sensor.calisthenics_suggestion_format') %}
+          {% set opmerking = states('sensor.calisthenics_suggestion_note') %}
+          {% set oefs = state_attr('sensor.calisthenics_suggestion_exercises', 'exercises') %}
+          {% set count = states('sensor.calisthenics_suggestion_exercise_count') %}
+
+          ## 💡 {{ titel }}
+
+          **Niveau:** {{ niveau | capitalize }} · **{{ count }} oefeningen**
+
+          ---
+
+          ### 🏋️ Oefeningen
+
+          | # | Oefening | Prescriptie | Video |
+          |---|----------|-------------|-------|
+          {% if oefs %}
+          {% for o in oefs %}
+          | {{ loop.index }} | **{{ o.name }}** | {{ o.prescription }} | [{{ o.tutorial_label }}]({{ o.tutorial_url }}) |
+          {% endfor %}
           {% else %}
-          Er is nog geen volgende training beschikbaar.
+          | - | *Geen oefeningen beschikbaar* | - | - |
           {% endif %}
+
+          ---
+
+          ### 🔄 Opzet
+
+          {{ opzet }}
+
+          {% if opmerking and opmerking | length > 0 %}
+          ### 📝 Opmerking
+
+          {{ opmerking }}
+          {% endif %}
+
+  # ── Section 4: Trainingsschema ──────────────────────────────
+  - type: grid
+    cards:
+      - type: heading
+        heading: Trainingsschema
+        icon: mdi:clipboard-list
+        badges:
+          - type: entity
+            entity: sensor.calisthenics_active_workout
+            show_state: true
+            color: green
+
+      - type: markdown
+        entity_id:
+          - sensor.calisthenics_active_workout
+          - sensor.calisthenics_next_workout
+          - sensor.calisthenics_progress_beginner_push_up
+          - sensor.calisthenics_progress_beginner_bodyweight_squat
+          - sensor.calisthenics_progress_beginner_glute_bridge
+          - sensor.calisthenics_progress_beginner_inverted_row_band_pull_up
+          - sensor.calisthenics_progress_beginner_walking_lunge
+          - sensor.calisthenics_progress_beginner_plank
+          - sensor.calisthenics_beginner_graduation_readiness
+        content: >-
+          {% set active = states('sensor.calisthenics_active_workout') %}
+          {% set nxt = states('sensor.calisthenics_next_workout') %}
+          {% if active in ['A', 'B'] %}
+          ## 🏋️ Sessie {{ active }} — {{ 'Basissterkte' if active == 'A' else 'Conditie & core' }}
+          Training is **actief**! Log je oefeningen hieronder.
+          {% elif nxt in ['A', 'B'] %}
+          ## 📋 Volgende: Sessie {{ nxt }} — {{ 'Basissterkte' if nxt == 'A' else 'Conditie & core' }}
+          Druk op **Start Training {{ nxt }}** om te beginnen.
+          {% else %}
+          ## 📋 Trainingsschema
+          Geen actieve of geplande sessie.
+          {% endif %}
+
+          ---
+
+          {% set session = active if active in ['A','B'] else nxt %}
+          {% if session == 'A' %}
+          ### Sessie A — Push / Squat / Hip
+          | # | Oefening | Prescriptie | Voortgang |
+          |---|----------|------------|----------|
+          | 1 | 💪 **Push-up** | 3×8-12 · tempo 2-0-1 | {{ states('sensor.calisthenics_progress_beginner_push_up') }} |
+          | 2 | 🧎 **Bodyweight squat** | 3×12-20 · tempo 2-0-2 | {{ states('sensor.calisthenics_progress_beginner_bodyweight_squat') }} |
+          | 3 | 🧘 **Glute bridge** | 3×15 · tempo 2-1-2 | {{ states('sensor.calisthenics_progress_beginner_glute_bridge') }} |
+
+          {% if states('sensor.calisthenics_progress_beginner_push_up') == 'regression_recommended' %}
+          ⚠️ **Push-up regressie:** Incline of knee push-up
+          {% endif %}
+          {% if states('sensor.calisthenics_progress_beginner_bodyweight_squat') == 'progression_ready' %}
+          ⬆️ **Squat progressie:** Split squat of pistol-squat boven 25 reps
+          {% endif %}
+          {% elif session == 'B' %}
+          ### Sessie B — Pull / Lunge / Core
+          | # | Oefening | Prescriptie | Voortgang |
+          |---|----------|------------|----------|
+          | 1 | 💪 **Inverted row / pull-up** | 3×8-12 · tempo 2-0-1 | {{ states('sensor.calisthenics_progress_beginner_inverted_row_band_pull_up') }} |
+          | 2 | 🚶 **Walking lunge** | 2×10/been | {{ states('sensor.calisthenics_progress_beginner_walking_lunge') }} |
+          | 3 | 🧘 **Plank** | 3×20-40 sec | {{ states('sensor.calisthenics_progress_beginner_plank') }} |
+
+          {% if states('sensor.calisthenics_progress_beginner_inverted_row_band_pull_up') == 'regression_recommended' %}
+          ⚠️ **Row regressie:** Band-assisted pull-up
+          {% endif %}
+          {% endif %}
+
+          {% if session in ['A','B'] %}
+          ---
+          🏆 **Graduatie-eisen:** 15 strict push-ups · 5 dead-hang pull-ups · 20 strict squats
+          *Status: {{ states("sensor.calisthenics_beginner_graduation_readiness") }}*
+          {% endif %}
+
+  # ── Section 5: Beginner voortgang ───────────────────────────
+  - type: grid
+    cards:
+      - type: heading
+        heading: Beginner voortgang
+        icon: mdi:chart-line-variant
+
+      - type: custom:button-card
+        entity: sensor.calisthenics_progress_beginner_push_up
+        name: Push-up
+        icon: mdi:arm-flex
+        show_state: true
+        show_label: false
+        styles: &progress-card-style
+          card:
+            - min-height: 72px
+            - border-radius: 16px
+            - padding: 10px 14px
+            - background: >-
+                linear-gradient(135deg, rgba(38,72,58,.94),
+                rgba(18,36,28,.97))
+            - border: 1px solid rgba(255,255,255,.08)
+          grid:
+            - grid-template-areas: '"i n" "i s"'
+            - grid-template-columns: 40px 1fr
+          icon:
+            - width: 26px
+            - color: "#4ade80"
+          name:
+            - justify-self: start
+            - font-size: 12px
+            - font-weight: 700
+            - color: white
+          state:
+            - justify-self: start
+            - font-size: 14px
+            - color: rgba(255,255,255,.78)
+
+      - type: custom:button-card
+        entity: sensor.calisthenics_progress_beginner_inverted_row_band_pull_up
+        name: Pull-up / Row
+        icon: mdi:human-handsup
+        show_state: true
+        show_label: false
+        styles: *progress-card-style
+
+      - type: custom:button-card
+        entity: sensor.calisthenics_progress_beginner_bodyweight_squat
+        name: Squat
+        icon: mdi:human
+        show_state: true
+        show_label: false
+        styles: *progress-card-style
+
+      - type: custom:button-card
+        entity: sensor.calisthenics_progress_beginner_glute_bridge
+        name: Glute bridge
+        icon: mdi:yoga
+        show_state: true
+        show_label: false
+        styles: *progress-card-style
+
+      - type: custom:button-card
+        entity: sensor.calisthenics_progress_beginner_plank
+        name: Plank
+        icon: mdi:human
+        show_state: true
+        show_label: false
+        styles: *progress-card-style
+
+      - type: custom:button-card
+        entity: sensor.calisthenics_progress_beginner_walking_lunge
+        name: Walking lunge
+        icon: mdi:walk
+        show_state: true
+        show_label: false
+        styles: *progress-card-style
+
+  # ── Section 6: Lichaamsmetingen ─────────────────────────────
+  - type: grid
+    cards:
+      - type: heading
+        heading: Lichaamsmetingen
+        icon: mdi:scale-bathroom
+
+      - type: heading
+        heading: Meting invoeren
+        heading_style: subtitle
+        icon: mdi:pencil-plus
+
+      - type: tile
+        entity: input_number.calisthenics_invoer_gewicht
+        name: Gewicht (kg)
+        icon: mdi:scale-bathroom
+        features:
+          - type: numeric-input
+            style: box
+
+      - type: tile
+        entity: input_number.calisthenics_invoer_taille
+        name: Taille (cm)
+        icon: mdi:tape-measure
+        features:
+          - type: numeric-input
+            style: box
+
+      - type: button
+        entity: script.calisthenics_meting_opslaan
+        name: Meting opslaan
+        icon: mdi:content-save-check
+        show_state: false
+        tap_action:
+          action: perform-action
+          perform_action: script.turn_on
+          target:
+            entity_id: script.calisthenics_meting_opslaan
+          confirmation:
+            text: Gewicht en taille opslaan in de Calisthenics Tracker?
+
       - type: grid
         columns: 2
         square: false
         cards:
-          - type: tile
-            entity: sensor.calisthenics_active_workout
-            name: Actieve training
-            icon: mdi:weight-lifter
-          - type: tile
-            entity: sensor.calisthenics_next_workout
-            name: Volgende training
-            icon: mdi:calendar-arrow-right
-          - type: button
-            entity: button.calisthenics_complete_workout
-            name: Training afronden
-            icon: mdi:check-circle-outline
-          - type: button
-            entity: button.calisthenics_cancel_workout
-            name: Training annuleren
-            icon: mdi:cancel
-          - type: tile
-            entity: sensor.calisthenics_current_level
-            name: Huidig niveau
-            icon: mdi:signal-cellular-3
-          - type: tile
-            entity: sensor.calisthenics_current_week
-            name: Trainingsweek
-            icon: mdi:calendar-week
-          - type: tile
-            entity: sensor.calisthenics_sessions_this_week
-            name: Trainingen deze week
-            icon: mdi:calendar-check
-          - type: tile
-            entity: sensor.calisthenics_training_minutes_this_week
-            name: Trainingsminuten deze week
-            icon: mdi:timer-outline
-          - type: tile
-            entity: sensor.calisthenics_beginner_graduation_readiness
-            name: Beginner-graduatie
-            icon: mdi:medal-outline
-      - type: tile
-        entity: select.calisthenics_suggestion_focus
-        name: Trainingsvoorstel
-        icon: mdi:target
-        features:
-          - type: select-options
-      - type: markdown
-        title: Voorgestelde training
-        content: >-
-          {% set exercises = state_attr('sensor.calisthenics_suggestion_exercises', 'exercises') %}
-          {% if exercises %}
-          **{{ states('sensor.calisthenics_suggestion_title') }}**
-          ({{ states('sensor.calisthenics_suggestion_level') }})
+          - type: custom:button-card
+            entity: sensor.calisthenics_latest_weight
+            name: Gewicht
+            icon: mdi:scale-bathroom
+            show_state: true
+            show_label: true
+            triggers_update:
+              - sensor.calisthenics_latest_weight
+              - sensor.calisthenics_weight_7_day_average
+            label: >-
+              [[[ const avg =
+              states['sensor.calisthenics_weight_7_day_average']?.state; return
+              avg && avg !== 'unknown' ? '7d gem: ' + avg + ' kg' : ''; ]]]
+            styles:
+              card:
+                - min-height: 86px
+                - border-radius: 18px
+                - padding: 14px
+                - background: >-
+                    linear-gradient(135deg, rgba(45,55,72,.96),
+                    rgba(25,30,39,.98))
+                - border: 1px solid rgba(255,255,255,.10)
+              grid:
+                - grid-template-areas: '"i n" "i s" "i l"'
+                - grid-template-columns: 48px 1fr
+              icon:
+                - width: 32px
+                - color: "#90caf9"
+              name:
+                - justify-self: start
+                - font-size: 13px
+                - font-weight: 700
+                - color: white
+              state:
+                - justify-self: start
+                - font-size: 22px
+                - font-weight: 700
+                - color: white
+              label:
+                - justify-self: start
+                - font-size: 10px
+                - color: rgba(255,255,255,.62)
 
-          {{ states('sensor.calisthenics_suggestion_format') }}
+          - type: custom:button-card
+            entity: sensor.calisthenics_weight_change_since_start
+            name: Verschil
+            icon: mdi:swap-vertical
+            show_state: true
+            show_label: false
+            styles:
+              card:
+                - min-height: 86px
+                - border-radius: 18px
+                - padding: 14px
+                - background: >-
+                    linear-gradient(135deg, rgba(45,55,72,.96),
+                    rgba(25,30,39,.98))
+                - border: 1px solid rgba(255,255,255,.10)
+              grid:
+                - grid-template-areas: '"i n" "i s"'
+                - grid-template-columns: 48px 1fr
+              icon:
+                - width: 32px
+                - color: "#ce93d8"
+              name:
+                - justify-self: start
+                - font-size: 13px
+                - font-weight: 700
+                - color: white
+              state:
+                - justify-self: start
+                - font-size: 22px
+                - font-weight: 700
+                - color: white
 
-          {% for exercise in exercises %}
-          - **{{ exercise.name }}**: {{ exercise.prescription }}
-            ([{{ exercise.tutorial_label }}]({{ exercise.tutorial_url }}))
-          {% endfor %}
-          {% set note = states('sensor.calisthenics_suggestion_note') %}
-          {% if note %}
+          - type: custom:button-card
+            entity: sensor.calisthenics_latest_waist
+            name: Taille
+            icon: mdi:tape-measure
+            show_state: true
+            show_label: false
+            styles:
+              card:
+                - min-height: 86px
+                - border-radius: 18px
+                - padding: 14px
+                - background: >-
+                    linear-gradient(135deg, rgba(45,55,72,.96),
+                    rgba(25,30,39,.98))
+                - border: 1px solid rgba(255,255,255,.10)
+              grid:
+                - grid-template-areas: '"i n" "i s"'
+                - grid-template-columns: 48px 1fr
+              icon:
+                - width: 32px
+                - color: "#ffb74d"
+              name:
+                - justify-self: start
+                - font-size: 13px
+                - font-weight: 700
+                - color: white
+              state:
+                - justify-self: start
+                - font-size: 22px
+                - font-weight: 700
+                - color: white
 
-          _{{ note }}_
-          {% endif %}
-          {% else %}
-          Er is nog geen trainingsvoorstel beschikbaar.
-          {% endif %}
-      - type: entities
-        title: Voortgang
-        show_header_toggle: false
-        entities:
-          - entity: sensor.calisthenics_latest_weight
-          - entity: sensor.calisthenics_weight_7_day_average
-          - entity: sensor.calisthenics_weight_change_since_start
-          - entity: sensor.calisthenics_latest_waist
-          - entity: sensor.calisthenics_average_daily_steps_7_days
-          - entity: sensor.calisthenics_average_sleep_7_days
-          - entity: sensor.calisthenics_progress_beginner_push_up
-          - entity: sensor.calisthenics_progress_beginner_inverted_row_band_pull_up
-          - entity: sensor.calisthenics_progress_beginner_bodyweight_squat
-          - entity: sensor.calisthenics_beginner_graduation_readiness
+          - type: custom:button-card
+            entity: sensor.calisthenics_average_daily_steps_7_days
+            name: Stappen (7d)
+            icon: mdi:shoe-print
+            show_state: true
+            show_label: false
+            styles:
+              card:
+                - min-height: 86px
+                - border-radius: 18px
+                - padding: 14px
+                - background: >-
+                    linear-gradient(135deg, rgba(45,55,72,.96),
+                    rgba(25,30,39,.98))
+                - border: 1px solid rgba(255,255,255,.10)
+              grid:
+                - grid-template-areas: '"i n" "i s"'
+                - grid-template-columns: 48px 1fr
+              icon:
+                - width: 32px
+                - color: "#4ade80"
+              name:
+                - justify-self: start
+                - font-size: 13px
+                - font-weight: 700
+                - color: white
+              state:
+                - justify-self: start
+                - font-size: 22px
+                - font-weight: 700
+                - color: white
+
+      - type: heading
+        heading: Gewichtstrend (30 dagen)
+        icon: mdi:chart-line
+
       - type: statistics-graph
-        title: Gewicht (30 dagen)
         chart_type: line
-        period: day
         days_to_show: 30
+        period: day
         stat_types:
           - mean
         entities:
-          - sensor.calisthenics_latest_weight
-          - sensor.calisthenics_weight_7_day_average
+          - entity: sensor.calisthenics_latest_weight
+            name: Gewicht
+          - entity: sensor.calisthenics_weight_7_day_average
+            name: 7d gemiddelde
+
+      - type: heading
+        heading: Training & metingen (7 dagen)
+        icon: mdi:chart-areaspline
+
       - type: history-graph
-        title: Training en lichaamsmetingen (7 dagen)
         hours_to_show: 168
         entities:
-          - sensor.calisthenics_active_workout
-          - sensor.calisthenics_latest_weight
-          - sensor.calisthenics_latest_waist
+          - entity: sensor.calisthenics_active_workout
+            name: Training
+          - entity: sensor.calisthenics_latest_weight
+            name: Gewicht
+          - entity: sensor.calisthenics_latest_waist
+            name: Taille
